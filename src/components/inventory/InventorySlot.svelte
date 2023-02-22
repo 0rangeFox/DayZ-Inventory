@@ -1,4 +1,6 @@
 <script lang='ts'>
+    import DragDropContainer from "../dnd/DragDropContainer.svelte";
+
     export let width: number = 0;
     export let height: number = 0;
 
@@ -7,12 +9,14 @@
 
 <div class='slot'>
     {#if hasItem}
-        <div
-            class='item'
-            style='--width: {width}; --height: {height};'
-        >
-            <div class="img" style='--img: url("https://static.wikia.nocookie.net/dayz_gamepedia/images/6/6c/AKM.png");' />
-        </div>
+        <DragDropContainer>
+            <div
+                    class='item'
+                    style='--width: {width}; --height: {height};'
+            >
+                <div class="img" style='--img: url("https://static.wikia.nocookie.net/dayz_gamepedia/images/6/6c/AKM.png");' />
+            </div>
+        </DragDropContainer>
     {/if}
 </div>
 

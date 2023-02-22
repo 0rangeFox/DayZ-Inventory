@@ -1,12 +1,7 @@
 <script lang='ts'>
-    import test from '$lib/counter';
     import InventoryGrid from '../components/inventory/InventoryGrid.svelte';
     import InventorySlot from '../components/inventory/InventorySlot.svelte';
     import InventoryHeader from '../components/inventory/InventoryHeader.svelte';
-
-    function increment() {
-        test.update(n => n + 1);
-    }
 
     const inventory_width_size: number = 5;
     const inventory_height_size: number = 2;
@@ -24,9 +19,6 @@
     '
 />
 
-{$test}
-<button on:click={increment}>Increment</button>
-
 <div class='test'>
     <InventoryHeader image='https://static.wikia.nocookie.net/dayz_gamepedia/images/2/2d/CoyoteBackpack_Brown.png' title='Coyote Backpack (Olive)' />
     <InventoryGrid width={inventory_width_size} height={inventory_height_size}>
@@ -43,13 +35,9 @@
 </div>
 
 <style>
-    .test {
-        width: 500px;
-    }
-
     :global(body) {
         color: white;
-        font-family: FontMedium;
+        font-family: FontMedium, sans-serif;
         font-size: 15px;
         margin: 0;
         padding: 0;
@@ -60,5 +48,9 @@
         position: absolute;
         width: 100vw;
         height: 100vh;
+    }
+
+    .test {
+        width: 500px;
     }
 </style>

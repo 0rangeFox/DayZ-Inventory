@@ -1,17 +1,21 @@
 <script lang='ts'>
+    import DropTarget from "../dnd/DropTarget.svelte";
+
     export let size: number = 50;
     export let width: number = 0;
     export let height: number = 0;
 </script>
 
-<div class='container'>
-    <div
-        class='grid'
-        style='--size: {size}; --width: {width}; --height: {height};'
-    >
-        <slot />
+<DropTarget>
+    <div class='container'>
+        <div
+            class='grid'
+            style='--size: {size}; --width: {width}; --height: {height};'
+        >
+            <slot />
+        </div>
     </div>
-</div>
+</DropTarget>
 
 <style lang='scss'>
     .container {
