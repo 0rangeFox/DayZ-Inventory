@@ -1,10 +1,7 @@
 <script lang='ts'>
-    import InventoryGrid from '../components/inventory/InventoryGrid.svelte';
-    import InventorySlot from '../components/inventory/InventorySlot.svelte';
-    import InventoryHeader from '../components/inventory/InventoryHeader.svelte';
+    import '../styles.scss';
 
-    const inventory_width_size: number = 5;
-    const inventory_height_size: number = 2;
+    import InventoryBlock from '../components/inventory/InventoryBlock.svelte';
 </script>
 
 <div
@@ -15,42 +12,45 @@
         min-height: 100vh;
         user-select: none;
         background-size: cover;
-        background-image: url("https://i.ytimg.com/vi/UJxnN1zPzY4/maxresdefault.jpg");
+        background-image: url("https://www.dayzrp.com/uploads/monthly_2018_11/DlQvdTqW4AInjYs.jpg.d5a9ca254a5a5610c486778973dd03f5.jpg");
     '
 />
 
-<div class='test'>
-    <InventoryHeader image='https://static.wikia.nocookie.net/dayz_gamepedia/images/2/2d/CoyoteBackpack_Brown.png' title='Coyote Backpack (Olive)' />
-    <InventoryGrid width={inventory_width_size} height={inventory_height_size}>
-        <InventorySlot width={4} height={2} hasItem />
-        <InventorySlot />
-        <InventorySlot />
-        <InventorySlot />
-        <InventorySlot />
-        <InventorySlot />
-        <InventorySlot />
-        <InventorySlot />
-        <InventorySlot />
-    </InventoryGrid>
-</div>
+<section class='inventory'>
+    <InventoryBlock />
+    <InventoryBlock />
+    <InventoryBlock />
+</section>
 
-<style>
-    :global(body) {
-        color: white;
-        font-family: FontMedium, sans-serif;
-        font-size: 15px;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
+<style lang='scss'>
+    .inventory {
+        width: 30%;
+        max-height: 90%;
+
+        overflow-y: scroll;
+
+        :global(.block + .block) {
+            margin-top: 5%;
+        }
     }
 
-    main {
-        position: absolute;
-        width: 100vw;
-        height: 100vh;
+    /* Width */
+    ::-webkit-scrollbar {
+        width: 5px;
     }
 
-    .test {
-        width: 500px;
+    /* Track */
+    ::-webkit-scrollbar-track {
+        box-shadow: inset 0 0 5px grey;
+    }
+
+    /* Handle */
+    ::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, .3);
+    }
+
+    /* Handle on hover */
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, .6);
     }
 </style>

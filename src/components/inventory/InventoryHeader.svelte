@@ -5,7 +5,7 @@
 
 <div class='header'>
     <div class='title'>
-        <img src={image} />
+        <img src={image} draggable="false" />
         {title}
     </div>
     <div>X</div>
@@ -20,15 +20,16 @@
         justify-content: space-between;
         background-color: $backgroundColor;
         padding: 2%;
+        user-select: none;
 
         .title {
-            width: 100%;
+            width: 90%;
             display: flex;
             align-items: center;
 
             img {
-              width: 25px;
-              margin-right: 2%;
+                width: 10%;
+                margin-right: 2%;
             }
         }
     }

@@ -1,8 +1,11 @@
-html {
-	scroll-behavior: smooth;
-}
-
 body {
-	min-height: 100vh;
+	width: 100vw;
+	height: 100vh;
 	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	color: white;
+	font-family: FontMedium, sans-serif;
+	font-size: 1rem;
+	user-select: none;
 }

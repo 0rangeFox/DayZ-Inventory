@@ -1,0 +1,13 @@
+// Inventory
+$MAX_SLOT_X: 6;
+$MAX_SLOT_Y: 2;
+
+$MAX_GRID_X: 10;
+$MAX_GRID_Y: $MAX_GRID_X * 10;
+
+:export {
+  MAX_SLOT_X: $MAX_SLOT_X;
+  MAX_SLOT_Y: $MAX_SLOT_Y;
+  MAX_GRID_X: $MAX_GRID_X;
+  MAX_GRID_Y: $MAX_GRID_Y;
+};

@@ -1,66 +1,23 @@
 <script lang='ts'>
-    import type { DragData, DropData, HitDragData, OnDragEnter, OnDragLeave, OnHitCallback } from '../../lib/dnd/models';
-    import { Dispatch } from '../../lib/dnd/utils/EventUtil';
+    import type { DragData, HitDragData } from '../../lib/dnd/models';
 
     type TDrop = $$Generic<any>;
     type TDrag = $$Generic<any>;
 
-    export let highlightClassName: string = 'highlighted';
-    export let targetKey: string | string[] = 'ddc';
-    export let dropData: TDrop = {};
-    export let onDragEnter: OnDragEnter = null;
-    export let onDragLeave: OnDragLeave = null;
-    export let onHit: OnHitCallback = null;
-
-    let isHighlighted: boolean = false;
-    let targetElement: HTMLSpanElement;
+    export let id: number;
 
     // useCallback equivalent of React
-    $: (handleDragEnter = (e: Event): void => {
-        const event: CustomEvent<DragData<TDrag>> = e as CustomEvent<DragData<TDrag>>;
-
-        if (highlightClassName)
-            isHighlighted = true;
-
-        props.onDragEnter?.(event);
+    $: (dragEnter = (e: CustomEvent<DragData<TDrag>>): void => {
+        console.log(`DropTarget | ${id} | DragEnter`, e.detail);
     });
 
-    $: (handleDragLeave = (e: Event): void => {
-        const event: CustomEvent<DragData<TDrag>> = e as CustomEvent<DragData<TDrag>>;
-
-        if (highlightClassName)
-            isHighlighted = false;
-
-        onDragLeave?.(event);
+    $: (dragLeave = (e: CustomEvent<DragData<TDrag>>): void => {
+        console.log(`DropTarget | ${id} | DragLeave`);
     });
 
-    $: (handleDrop = (e: Event): void => {
-        const event: CustomEvent<HitDragData<TDrag>> = e as CustomEvent<HitDragData<TDrag>>;
-
-        Dispatch<DropData<TDrop, TDrag>>(
-            event.detail.containerElem,
-            targetKey,
-            'Dropped',
-            {
-                targetKey: '',
-                dropData,
-                dragData: event.detail.dragData,
-                dropElem: targetElement,
-            }
-        );
-
-        onHit?.(event);
-        isHighlighted = false;
+    $: (drop = (e: CustomEvent<HitDragData<TDrag>>): void => {
+        console.log(`DropTarget | ${id} | Drop`);
     });
-
-    const targetElemClassNames = `droptarget ${
-        isHighlighted ? highlightClassName : ''
-    }`;
 </script>
 
-<span
-        bind:this={targetElement}
-        class={targetElemClassNames}
->
-    <slot />
-</span>
+<slot {dragEnter} {dragLeave} {drop} />
