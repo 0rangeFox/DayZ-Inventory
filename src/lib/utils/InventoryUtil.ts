@@ -3,9 +3,9 @@ import { getItemById } from '../stores/InventoryStore';
 import type InventoryBlock from '../models/InventoryBlock';
 import type { InventoryItem, Item } from '../models/InventoryItem';
 
-const generateEmptyGrid = moize((width: number, height: number): undefined[] => new Array<undefined>(width * height).fill(undefined));
+const generateEmptyGrid = moize((width: number, height: number): null[] => new Array<null>(width * height).fill(null));
 
-function insertItemOnGrid(maxWidth: number, grid: (string | undefined)[], { id, item, slot, rotated }: InventoryItem): void {
+function insertItemOnGrid(maxWidth: number, grid: (string | null)[], { id, item, slot, rotated }: InventoryItem): void {
     const { width, height }: Item = getItemById(item);
 
     const itemHeight: number = rotated ? width : height;
@@ -18,9 +18,9 @@ function insertItemOnGrid(maxWidth: number, grid: (string | undefined)[], { id, 
             grid[slotY] = id;
 }
 
-function generateGridFromBlock(block: InventoryBlock, ignore: string[] = []): (string | undefined)[] {
+function generateGridFromBlock(block: InventoryBlock, ignore: string[] = []): (string | null)[] {
     const { freeWidth, freeHeight }: Item = getItemById(block.item);
-    const blockGridItems: (string | undefined)[] = generateEmptyGrid(freeWidth, freeHeight);
+    const blockGridItems: (string | null)[] = generateEmptyGrid(freeWidth, freeHeight);
 
     for (const item of block.items.filter(({ id }: InventoryItem) => !ignore.includes(id)))
         insertItemOnGrid(freeWidth, blockGridItems, item);

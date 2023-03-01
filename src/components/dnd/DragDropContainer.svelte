@@ -6,6 +6,12 @@
 
 <script lang='ts'>
     import { createEventDispatcher } from 'svelte';
+    import type DragData from "../../lib/dnd/models/DragData";
+
+    type TDrag = $$Generic<any>;
+
+    export let data: TDrag | null = null;
+    export let targetKey: any = null;
 
     const dispatch = createEventDispatcher();
 
@@ -23,8 +29,8 @@
         if (targetElement === lastTarget) return;
 
         if (lastTarget !== parentDnDContainerElement)
-            lastTarget?.dispatchEvent(new CustomEvent('dragLeave', { detail: (targetElement as HTMLElement | null)?.dataset }));
-        (lastTarget = targetElement !== parentDnDContainerElement ? targetElement : null)?.dispatchEvent(new CustomEvent('dragEnter', { detail: (targetElement as HTMLElement | null)?.dataset }));
+            lastTarget?.parentElement?.dispatchEvent(new CustomEvent<DragData<TDrag>>('dragLeave', { detail: { targetKey, data } }));
+        (lastTarget = targetElement !== parentDnDContainerElement ? targetElement : null)?.parentElement?.dispatchEvent(new CustomEvent<DragData<TDrag>>('dragEnter', { detail: { targetKey, data } }));
     }
 
     function onMouseDown(e: MouseEvent): void {
@@ -70,7 +76,7 @@
         const parentDnDContainerElement: HTMLElement = dndContainerElement.parentElement;
 
         if (lastTarget !== parentDnDContainerElement) {
-            lastTarget?.dispatchEvent(new CustomEvent('drop', { detail: (lastTarget as HTMLElement | null)?.dataset }));
+            lastTarget?.parentElement?.dispatchEvent(new CustomEvent<DragData<TDrag>>('drop', { detail: { targetKey, data } }));
             lastTarget = null;
         }
 

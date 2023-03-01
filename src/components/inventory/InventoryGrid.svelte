@@ -6,7 +6,7 @@
 
     export let item: Item;
     export let block: InventoryBlock;
-    const gridItems: (string | undefined)[] = generateGridFromBlock(block);
+    const gridItems: (string | null)[] = generateGridFromBlock(block);
 
     let containerElement: HTMLDivElement;
     let size: number = 0;
@@ -24,7 +24,7 @@
         style='--size: {size}; --width: {item.freeWidth}; --height: {item.freeHeight};'
     >
         {#each Array(gridItems.length) as item, slot}
-            <InventorySlot id={item} item={block.items.find((item) => item.slot === slot)} />
+            <InventorySlot {slot} item={block.items.find((item) => item.slot === slot)} />
         {/each}
     </div>
 </div>

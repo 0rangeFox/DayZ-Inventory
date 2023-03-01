@@ -4,12 +4,15 @@
     import type { InventoryItem, Item } from '../../lib/models';
     import { getItemById } from '../../lib/stores/InventoryStore';
 
-    export let id: string | undefined;
-    export let item: InventoryItem | undefined;
-    const referenceItem: Item | undefined = item ? getItemById(item.item) : undefined;
+    export let slot: number;
+    export let item: InventoryItem | null;
+    const referenceItem: Item | null = item ? getItemById(item.item) : null;
 
-    function onDragEnter() {
-
+    function onDragEnter(e: CustomEvent<InventoryItem>) {
+        console.log('======================')
+        console.log(item)
+        console.log(e.detail)
+        console.log('======================')
     }
 
     function onDrag(e) {
@@ -17,16 +20,18 @@
     }
 </script>
 
-<DropTarget {id} let:dragEnter let:dragLeave let:drop>
+<DropTarget
+    id={slot}
+    on:dragEnter={onDragEnter}
+>
     <div
-        on:dragEnter={dragEnter}
-        on:dragLeave={dragLeave}
-        on:drop={drop}
         class='slot'
-        data-slot={id}
+        data-slot={slot}
     >
         {#if item}
             <DragDropContainer
+                data={item}
+                targetKey={referenceItem.type}
                 on:drag={onDrag}
             >
                 <div

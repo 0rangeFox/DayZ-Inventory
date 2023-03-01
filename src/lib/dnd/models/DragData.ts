@@ -1,9 +1,6 @@
 interface DragData<T = any> {
-    targetKey: string;
-    dragData: T;
-    dragElem: HTMLDivElement;
-    containerElem: HTMLDivElement;
-    sourceElem: HTMLSpanElement;
+    targetKey: any | any[];
+    data?: T;
 }
 
 export default DragData;
