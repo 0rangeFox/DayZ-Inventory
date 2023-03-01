@@ -1,12 +1,12 @@
 <script lang='ts'>
     import DragDropContainer from '../dnd/DragDropContainer.svelte';
-    import DropTarget from "../dnd/DropTarget.svelte";
+    import DropTarget from '../dnd/DropTarget.svelte';
+    import type { InventoryItem, Item } from '../../lib/models';
+    import { getItemById } from '../../lib/stores/InventoryStore';
 
-    export let id: number;
-    export let width: number = 0;
-    export let height: number = 0;
-
-    export let hasItem: boolean = false;
+    export let id: string | undefined;
+    export let item: InventoryItem | undefined;
+    const referenceItem: Item | undefined = item ? getItemById(item.item) : undefined;
 
     function onDragEnter() {
 
@@ -25,15 +25,15 @@
         class='slot'
         data-slot={id}
     >
-        {#if hasItem}
+        {#if item}
             <DragDropContainer
                 on:drag={onDrag}
             >
                 <div
                     class='item'
-                    style='--width: {width}; --height: {height};'
+                    style='--width: {referenceItem.width}; --height: {referenceItem.height};'
                 >
-                    <div class='img' style='--img: url("https://static.wikia.nocookie.net/dayz_gamepedia/images/6/6c/AKM.png");'></div>
+                    <div class='img' style='--img: url("/images/inventory/items/{referenceItem.image}.png");'></div>
                 </div>
             </DragDropContainer>
         {/if}

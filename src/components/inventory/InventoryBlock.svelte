@@ -1,9 +1,14 @@
 <script lang='ts'>
     import InventoryHeader from './InventoryHeader.svelte';
     import InventoryGrid from './InventoryGrid.svelte';
+    import type { InventoryBlock, Item } from '../../lib/models';
+    import { getItemById } from '../../lib/stores/InventoryStore';
+
+    export let block: InventoryBlock;
+    let item: Item = getItemById(block.item);
 </script>
 
 <div class='block'>
-    <InventoryHeader image='https://static.wikia.nocookie.net/dayz_gamepedia/images/2/2d/CoyoteBackpack_Brown.png' title='Coyote Backpack (Olive)' />
-    <InventoryGrid width={4} height={3} />
+    <InventoryHeader {item} />
+    <InventoryGrid {item} {block} />
 </div>

@@ -1,6 +1,7 @@
 <script lang='ts'>
     import '../styles.scss';
 
+    import { inventories } from '../lib/stores/InventoryStore';
     import InventoryBlock from '../components/inventory/InventoryBlock.svelte';
 </script>
 
@@ -16,11 +17,13 @@
     '
 />
 
-<section class='inventory'>
-    <InventoryBlock />
-    <InventoryBlock />
-    <InventoryBlock />
-</section>
+{#each $inventories as inventory}
+    <section class='inventory'>
+        {#each inventory.blocks as block}
+            <InventoryBlock {block} />
+        {/each}
+    </section>
+{/each}
 
 <style lang='scss'>
     .inventory {

@@ -1,9 +1,12 @@
 <script lang='ts'>
     import { innerDimensions } from '../../lib/utils/GraphicUtil';
     import InventorySlot from './InventorySlot.svelte';
+    import type { InventoryBlock, Item } from '../../lib/models';
+    import { generateGridFromBlock } from '../../lib/utils/InventoryUtil';
 
-    export let width: number = 0;
-    export let height: number = 0;
+    export let item: Item;
+    export let block: InventoryBlock;
+    const gridItems: (string | undefined)[] = generateGridFromBlock(block);
 
     let containerElement: HTMLDivElement;
     let size: number = 0;
@@ -18,11 +21,10 @@
 >
     <div
         class='grid'
-        style='--size: {size}; --width: {width}; --height: {height};'
+        style='--size: {size}; --width: {item.freeWidth}; --height: {item.freeHeight};'
     >
-        <InventorySlot id={0} hasItem width={4} height={2} />
-        {#each Array(width * height - 1) as _, i}
-            <InventorySlot id={i + 1} />
+        {#each Array(gridItems.length) as item, slot}
+            <InventorySlot id={item} item={block.items.find((item) => item.slot === slot)} />
         {/each}
     </div>
 </div>

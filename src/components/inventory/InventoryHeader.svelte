@@ -1,12 +1,13 @@
 <script lang='ts'>
-    export let image: string;
-    export let title: string;
+    import type { Item } from '../../lib/models';
+
+    export let item: Item;
 </script>
 
 <div class='header'>
     <div class='title'>
-        <img src={image} draggable="false" />
-        {title}
+        <img src={`/images/inventory/items/${item.image}.png`} draggable='false' />
+        {item.name}
     </div>
     <div>X</div>
 </div>
