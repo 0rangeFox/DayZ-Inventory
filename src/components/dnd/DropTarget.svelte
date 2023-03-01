@@ -1,4 +1,7 @@
 <script lang='ts' context='module'>
+    import { v4 } from 'uuid';
+    export const UNIQUE_KEY: string = v4();
+
     function checkTargetKeys(from: any | any[], to: any | any[]): boolean {
         const isFromArray: boolean = Array.isArray(from), isToArray: boolean = Array.isArray(to);
         if (isFromArray && isToArray) {
@@ -48,6 +51,7 @@
 </script>
 
 <span
+    id={UNIQUE_KEY}
     on:dragEnter={dragEnter}
     on:dragLeave={dragLeave}
     on:drop={drop}

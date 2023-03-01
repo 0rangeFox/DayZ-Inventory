@@ -6,7 +6,8 @@
 
 <script lang='ts'>
     import { createEventDispatcher } from 'svelte';
-    import type DragData from "../../lib/dnd/models/DragData";
+    import { UNIQUE_KEY } from './DropTarget.svelte';
+    import type DragData from '../../lib/dnd/models/DragData';
 
     type TDrag = $$Generic<any>;
 
@@ -24,13 +25,16 @@
 
     function updateTargetElementTo(x: number, y: number): void {
         const parentDnDContainerElement: HTMLElement = dndContainerElement.parentElement;
-        const targetElement: Element | null = document.elementFromPoint(x, y);
+        let targetElement: Element | null = document.elementFromPoint(x, y);
+
+        while (targetElement && targetElement?.id !== UNIQUE_KEY)
+            targetElement = targetElement?.parentElement;
 
         if (targetElement === lastTarget) return;
 
         if (lastTarget !== parentDnDContainerElement)
-            lastTarget?.parentElement?.dispatchEvent(new CustomEvent<DragData<TDrag>>('dragLeave', { detail: { targetKey, data } }));
-        (lastTarget = targetElement !== parentDnDContainerElement ? targetElement : null)?.parentElement?.dispatchEvent(new CustomEvent<DragData<TDrag>>('dragEnter', { detail: { targetKey, data } }));
+            lastTarget?.dispatchEvent(new CustomEvent<DragData<TDrag>>('dragLeave', { detail: { targetKey, data } }));
+        (lastTarget = targetElement !== parentDnDContainerElement ? targetElement : null)?.dispatchEvent(new CustomEvent<DragData<TDrag>>('dragEnter', { detail: { targetKey, data } }));
     }
 
     function onMouseDown(e: MouseEvent): void {
@@ -76,7 +80,7 @@
         const parentDnDContainerElement: HTMLElement = dndContainerElement.parentElement;
 
         if (lastTarget !== parentDnDContainerElement) {
-            lastTarget?.parentElement?.dispatchEvent(new CustomEvent<DragData<TDrag>>('drop', { detail: { targetKey, data } }));
+            lastTarget?.dispatchEvent(new CustomEvent<DragData<TDrag>>('drop', { detail: { targetKey, data } }));
             lastTarget = null;
         }
 

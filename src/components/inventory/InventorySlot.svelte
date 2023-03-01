@@ -21,7 +21,6 @@
 </script>
 
 <DropTarget
-    id={slot}
     on:dragEnter={onDragEnter}
 >
     <div
