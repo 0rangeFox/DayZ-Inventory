@@ -17,14 +17,14 @@
     const dispatch = createEventDispatcher();
 
     let dndContainerElement: HTMLDivElement; // Reference for this component.
-    let dragElement: HTMLElement | null = null; // The DOM elem we're dragging, and the elements we're dragging over.
+    let dragElement: HTMLDivElement | null = null; // The DOM elem we're dragging, and the elements we're dragging over.
     let left: number = 0;
     let top: number = 0;
 
     let lastTarget: Element | null = null;
 
     function updateTargetElementTo(x: number, y: number): void {
-        const parentDnDContainerElement: HTMLElement = dndContainerElement.parentElement;
+        const parentDnDContainerElement: HTMLDivElement = dndContainerElement.parentElement;
         let targetElement: Element | null = document.elementFromPoint(x, y);
 
         while (targetElement && targetElement?.id !== UNIQUE_KEY)
@@ -33,8 +33,8 @@
         if (targetElement === lastTarget) return;
 
         if (lastTarget !== parentDnDContainerElement)
-            lastTarget?.dispatchEvent(new CustomEvent<DragData<TDrag>>('dragLeave', { detail: { targetKey, data } }));
-        (lastTarget = targetElement !== parentDnDContainerElement ? targetElement : null)?.dispatchEvent(new CustomEvent<DragData<TDrag>>('dragEnter', { detail: { targetKey, data } }));
+            lastTarget?.dispatchEvent(new CustomEvent<DragData<TDrag>>('dragLeave', { detail: { targetKey, data, dragElement } }));
+        (lastTarget = targetElement !== parentDnDContainerElement ? targetElement : null)?.dispatchEvent(new CustomEvent<DragData<TDrag>>('dragEnter', { detail: { targetKey, data, dragElement } }));
     }
 
     function onMouseDown(e: MouseEvent): void {
@@ -46,7 +46,7 @@
             left = dLeft;
             top = dTop;
 
-            const newDragElement: HTMLElement = (dndContainerElement.cloneNode(true) as HTMLDivElement).firstElementChild as HTMLElement;
+            const newDragElement: HTMLDivElement = (dndContainerElement.cloneNode(true) as HTMLDivElement).firstElementChild as HTMLDivElement;
             newDragElement.style.position = 'fixed';
             newDragElement.style.width = width;
             newDragElement.style.height = height;
@@ -54,7 +54,7 @@
             newDragElement.style.top = `${top}px`;
             newDragElement.style.pointerEvents = 'none'; // To enable "scroll" actions.
 
-            dragElement = document.body.appendChild<HTMLElement>(newDragElement);
+            dragElement = document.body.appendChild<HTMLDivElement>(newDragElement);
         }
     }
 
@@ -77,16 +77,16 @@
 
     function onMouseUp(e: MouseEvent): void {
         if (!dragElement) return;
-        const parentDnDContainerElement: HTMLElement = dndContainerElement.parentElement;
+        const parentDnDContainerElement: HTMLDivElement = dndContainerElement.parentElement;
 
         if (lastTarget !== parentDnDContainerElement) {
-            lastTarget?.dispatchEvent(new CustomEvent<DragData<TDrag>>('drop', { detail: { targetKey, data } }));
+            lastTarget?.dispatchEvent(new CustomEvent<DragData<TDrag>>('drop', { detail: { targetKey, data, dragElement } }));
             lastTarget = null;
         }
 
         dispatch('dragEnd', { data: {} });
 
-        document.body.removeChild<HTMLElement>(dragElement);
+        document.body.removeChild<HTMLDivElement>(dragElement);
         dragElement = null;
     }
 </script>
@@ -101,7 +101,7 @@
     bind:this={dndContainerElement}
     on:mousedown={onMouseDown}
     class='container'
-    style='display: {dragElement ? "none" : "inherit"};'
+    style:display={dragElement ? 'none' : 'inherit'}
 >
     <slot />
 </div>
@@ -114,9 +114,5 @@
 
         user-select: none;
         cursor: default;
-
-        :global(.item) {
-            box-shadow: 0 0 0 1px transparent inset;
-        }
     }
 </style>

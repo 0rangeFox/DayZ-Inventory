@@ -28,25 +28,25 @@
     const dispatch = createEventDispatcher();
 
     // useCallback equivalent of React
-    $: (dragEnter = ({ detail: { targetKey: eTargetKey, data }}: CustomEvent<DragData<TDrag>>): void => {
-        if (targetKey && !checkTargetKeys(targetKey, eTargetKey)) return;
+    $: (dragEnter = ({ detail }: CustomEvent<DragData<TDrag>>): void => {
+        if (targetKey && !checkTargetKeys(targetKey, detail.targetKey)) return;
 
-        console.log(`DropTarget | DragEnter`, data);
-        dispatch('dragEnter', data);
+        console.log(`DropTarget | DragEnter`, detail);
+        dispatch('dragEnter', detail);
     });
 
-    $: (dragLeave = ({ detail: { targetKey: eTargetKey, data }}: CustomEvent<DragData<TDrag>>): void => {
-        if (targetKey && !checkTargetKeys(targetKey, eTargetKey)) return;
+    $: (dragLeave = ({ detail }: CustomEvent<DragData<TDrag>>): void => {
+        if (targetKey && !checkTargetKeys(targetKey, detail.targetKey)) return;
 
-        console.log(`DropTarget | DragLeave`, data);
-        dispatch('dragLeave', data);
+        console.log(`DropTarget | DragLeave`, detail);
+        dispatch('dragLeave', detail);
     });
 
-    $: (drop = ({ detail: { targetKey: eTargetKey, data }}: CustomEvent<DragData<TDrag>>): void => {
-        if (targetKey && !checkTargetKeys(targetKey, eTargetKey)) return;
+    $: (drop = ({ detail }: CustomEvent<DragData<TDrag>>): void => {
+        if (targetKey && !checkTargetKeys(targetKey, detail.targetKey)) return;
 
-        console.log(`DropTarget | Drop`, data);
-        dispatch('drop', data);
+        console.log(`DropTarget | Drop`, detail);
+        dispatch('drop', detail);
     });
 </script>
 

@@ -27,7 +27,7 @@
 
 <style lang='scss'>
     .inventory {
-        width: 30%;
+        width: 60%;
         max-height: 90%;
 
         overflow-y: scroll;

@@ -3,16 +3,18 @@
     import DropTarget from '../dnd/DropTarget.svelte';
     import type { InventoryItem, Item } from '../../lib/models';
     import { getItemById } from '../../lib/stores/InventoryStore';
+    import type {DragData} from "../../lib/dnd/models";
 
     export let slot: number;
     export let item: InventoryItem | null;
     const referenceItem: Item | null = item ? getItemById(item.item) : null;
 
-    function onDragEnter(e: CustomEvent<InventoryItem>) {
-        console.log('======================')
-        console.log(item)
-        console.log(e.detail)
-        console.log('======================')
+    function onDragEnter(e: CustomEvent<DragData<InventoryItem>>) {
+        e.detail.dragElement.style.boxShadow = '0 0 0 1px green inset';
+    }
+
+    function onDragLeave(e: CustomEvent<DragData<InventoryItem>>) {
+        e.detail.dragElement.style.boxShadow = '0 0 0 1px red inset';
     }
 
     function onDrag(e) {
@@ -22,6 +24,7 @@
 
 <DropTarget
     on:dragEnter={onDragEnter}
+    on:dragLeave={onDragLeave}
 >
     <div
         class='slot'
