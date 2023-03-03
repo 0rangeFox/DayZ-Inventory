@@ -38,20 +38,21 @@
         dropElement = findDropElement(containerElement) as HTMLSpanElement;
     });
 
-    function updateTargetElementTo(x: number, y: number): void {
+    function updateTargetElementTo(x: number, y: number, forceUpdate: boolean = false): void {
         let targetElement: HTMLSpanElement | null = findDropElement(document.elementFromPoint(x, y));
 
-        if (targetElement === lastTarget) return;
+        if (!forceUpdate && targetElement === lastTarget) return;
 
-        if (lastTarget !== dropElement)
+        if (forceUpdate || lastTarget !== dropElement)
             lastTarget?.dispatchEvent(new CustomEvent<DragData<TDrag>>('dragLeave', { detail: { targetKey, data, dragElement } }));
-        (lastTarget = targetElement !== dropElement ? targetElement : null)?.dispatchEvent(new CustomEvent<DragData<TDrag>>('dragEnter', { detail: { targetKey, data, dragElement } }));
+        (lastTarget = forceUpdate || targetElement !== dropElement ? targetElement : null)?.dispatchEvent(new CustomEvent<DragData<TDrag>>('dragEnter', { detail: { targetKey, data, dragElement } }));
     }
 
     function onKeyDown(e: KeyboardEvent) {
         if (!dragElement) return;
 
-        dispatch('key', { event: e, dragElement });
+        if (dispatch('key', { event: e, dragElement }, { cancelable: true }))
+            updateTargetElementTo(left, top, true);
     }
 
     function onMouseWheel(e: WheelEvent): void {
@@ -66,9 +67,8 @@
         dragElement.style.left = `${left += e.movementX}px`;
         dragElement.style.top = `${top += e.movementY}px`;
 
-        updateTargetElementTo(left, top);
-
-        dispatch('drag', { data: {} });
+        if (dispatch('drag', { data: {} }, { cancelable: true }))
+            updateTargetElementTo(left, top);
     }
 
     function onMouseUp(e: MouseEvent): void {
