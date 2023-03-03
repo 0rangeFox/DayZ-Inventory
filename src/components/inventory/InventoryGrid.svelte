@@ -1,30 +1,30 @@
 <script lang='ts'>
-    import { innerDimensions } from '../../lib/utils/GraphicUtil';
-    import InventorySlot from './InventorySlot.svelte';
     import type { InventoryBlock, Item } from '../../lib/models';
     import { generateGridFromBlock } from '../../lib/utils/InventoryUtil';
+    import { innerDimensions } from '../../lib/utils/GraphicUtil';
+    import { MAX_GRID_X } from '../../lib/models';
+    import InventorySlot from './InventorySlot.svelte';
 
     export let item: Item;
     export let block: InventoryBlock;
     const gridItems: (string | null)[] = generateGridFromBlock(block);
 
     let containerElement: HTMLDivElement;
-    let size: number = 0;
-
-    $: size = innerDimensions(containerElement).width;
+    let containerWidth: number;
+    $: slotSize = containerWidth && innerDimensions(containerElement).width / MAX_GRID_X;
 </script>
 
 <div
     bind:this={containerElement}
-    bind:clientWidth={size}
+    bind:clientWidth={containerWidth}
     class='container'
 >
     <div
         class='grid'
-        style='--size: {size}; --width: {item.freeWidth}; --height: {item.freeHeight};'
+        style='--size: {slotSize}px; --width: {item.freeWidth}; --height: {item.freeHeight};'
     >
         {#each Array(gridItems.length) as item, slot}
-            <InventorySlot {slot} item={block.items.find((item) => item.slot === slot)} />
+            <InventorySlot size={slotSize} {slot} item={block.items.find((item) => item.slot === slot)} />
         {/each}
     </div>
 </div>
@@ -38,7 +38,7 @@
         padding-right: 5%;
 
         .grid {
-            $size: calc(var(--size) / $MAX_GRID_X * 1px);
+            $size: var(--size);
             $width: var(--width);
             $height: var(--height);
             $border: 1px solid rgba(111, 111, 111, .4);

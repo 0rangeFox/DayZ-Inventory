@@ -31,7 +31,7 @@ const [ inventories ] = speedWritable<Inventory[]>(IS_WEB_DEBUG ? [
                 item: 1,
                 items: [
                     { id: 'A5rt4z3L7my98eBj', item: 6, amount: 1, slot: 0, rotated: false },
-                    { id: 'J3Hl7ApS1d5Sh3OY', item: 7, amount: 5, slot: 2, rotated: false }
+                    { id: 'J3Hl7ApS1d5Sh3OY', item: 7, amount: 5, slot: 8, rotated: false }
                 ]
             },
             {
@@ -39,8 +39,8 @@ const [ inventories ] = speedWritable<Inventory[]>(IS_WEB_DEBUG ? [
                 item: 4,
                 items: [
                     { id: '8W6i1WNs8a027NAk', item: 2, amount: 1, slot: 0, rotated: true },
-                    { id: 'LU7x5f928bAzUa4O', item: 1, amount: 1, slot: 4, rotated: false },
-                    { id: '3Jj8m40IyeLarhbo', item: 6, amount: 1, slot: 6, rotated: true }
+                    { id: 'LU7x5f928bAzUa4O', item: 1, amount: 1, slot: 3, rotated: false },
+                    { id: '3Jj8m40IyeLarhbo', item: 6, amount: 1, slot: 5, rotated: true }
                 ]
             }
         ]
