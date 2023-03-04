@@ -18,7 +18,7 @@
 
 <script lang='ts'>
     import { createEventDispatcher } from 'svelte';
-    import type { DragData } from '../../lib/dnd/models';
+    import type { DragEvent } from '../../lib/dnd/models';
 
     type TDrag = $$Generic<any>;
 
@@ -28,25 +28,25 @@
     const dispatch = createEventDispatcher();
 
     // useCallback equivalent of React
-    $: (dragEnter = ({ detail }: CustomEvent<DragData<TDrag>>): void => {
+    $: (dragEnter = ({ detail }: CustomEvent<DragEvent<TDrag>>): void => {
         if (targetKey && !checkTargetKeys(targetKey, detail.targetKey)) return;
 
-        console.log(`DropTarget | DragEnter`, detail);
-        dispatch('dragEnter', detail);
+        console.log(`DropTarget | DragEnter`, detail.data);
+        dispatch<DragEvent<TDrag>>('dragEnter', detail);
     });
 
-    $: (dragLeave = ({ detail }: CustomEvent<DragData<TDrag>>): void => {
+    $: (dragLeave = ({ detail }: CustomEvent<DragEvent<TDrag>>): void => {
         if (targetKey && !checkTargetKeys(targetKey, detail.targetKey)) return;
 
-        console.log(`DropTarget | DragLeave`, detail);
-        dispatch('dragLeave', detail);
+        console.log(`DropTarget | DragLeave`, detail.data);
+        dispatch<DragEvent<TDrag>>('dragLeave', detail);
     });
 
-    $: (drop = ({ detail }: CustomEvent<DragData<TDrag>>): void => {
+    $: (drop = ({ detail }: CustomEvent<DragEvent<TDrag>>): void => {
         if (targetKey && !checkTargetKeys(targetKey, detail.targetKey)) return;
 
-        console.log(`DropTarget | Drop`, detail);
-        dispatch('drop', detail);
+        console.log(`DropTarget | Drop`, detail.data);
+        dispatch<DragEvent<TDrag>>('drop', detail);
     });
 </script>
 

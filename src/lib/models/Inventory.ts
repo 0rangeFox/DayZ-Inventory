@@ -11,5 +11,5 @@ interface Inventory {
     blocks: InventoryBlock[];
 }
 
-export type { Inventory };
+export default Inventory;
 export { InventoryType };

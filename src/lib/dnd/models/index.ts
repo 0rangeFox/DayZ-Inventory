@@ -1,5 +1,7 @@
-import type DragData from './DragData';
+import type DragEvent from './DragEvent';
+import type KeyboardDragEvent from './KeyboardDragEvent';
 
 export type {
-    DragData
+    DragEvent,
+    KeyboardDragEvent
 };

@@ -1,4 +1,4 @@
-import type { Inventory } from './Inventory';
+import type Inventory from './Inventory';
 import { InventoryType } from './Inventory';
 import type InventoryBlock from './InventoryBlock';
 import { MAX_GRID_X, MAX_GRID_Y } from './InventoryBlock';

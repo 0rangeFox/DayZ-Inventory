@@ -2,12 +2,12 @@
     import { UNIQUE_KEY } from './DropTarget.svelte';
 
     function findDropElement(element: Element | null): HTMLSpanElement | null {
-        let dropElement: HTMLSpanElement | null = element;
+        let dropElement: Element | null = element;
 
-        while (dropElement && dropElement?.id !== UNIQUE_KEY)
-            dropElement = dropElement?.parentElement;
+        while (dropElement && dropElement.id !== UNIQUE_KEY)
+            dropElement = dropElement.parentElement;
 
-        return dropElement;
+        return dropElement as HTMLSpanElement | null;
     }
 
     function usesLeftButton(e: MouseEvent): boolean {
@@ -17,7 +17,7 @@
 
 <script lang='ts'>
     import { createEventDispatcher, onMount } from 'svelte';
-    import type DragData from '../../lib/dnd/models/DragData';
+    import type { DragEvent, KeyboardDragEvent } from '../../lib/dnd/models';
 
     type TDrag = $$Generic<any>;
 
@@ -28,11 +28,12 @@
 
     let containerElement: HTMLDivElement;
     let dropElement: HTMLSpanElement; // The drop element that belongs to this component.
-    let dragElement: HTMLDivElement | null = null; // The DOM elem we're dragging, and the elements we're dragging over.
+    let dragElement: HTMLElement | null = null; // The DOM elem we're dragging, and the elements we're dragging over.
     let left: number = 0;
     let top: number = 0;
 
     let lastTarget: Element | null = null;
+    let lastData: TDrag | null = null;
 
     onMount(() => {
         dropElement = findDropElement(containerElement) as HTMLSpanElement;
@@ -44,15 +45,16 @@
         if (!forceUpdate && targetElement === lastTarget) return;
 
         if (forceUpdate || lastTarget !== dropElement)
-            lastTarget?.dispatchEvent(new CustomEvent<DragData<TDrag>>('dragLeave', { detail: { targetKey, data, dragElement } }));
-        (lastTarget = forceUpdate || targetElement !== dropElement ? targetElement : null)?.dispatchEvent(new CustomEvent<DragData<TDrag>>('dragEnter', { detail: { targetKey, data, dragElement } }));
+            lastTarget?.dispatchEvent(new CustomEvent<DragEvent<TDrag>>('dragLeave', { detail: { targetKey, data: forceUpdate ? lastData : data, dragElement } }));
+        (lastTarget = forceUpdate || targetElement !== dropElement ? targetElement : null)?.dispatchEvent(new CustomEvent<DragEvent<TDrag>>('dragEnter', { detail: { targetKey, data, dragElement } }));
     }
 
     function onKeyDown(e: KeyboardEvent) {
         if (!dragElement) return;
 
-        if (dispatch('key', { event: e, dragElement }, { cancelable: true }))
-            updateTargetElementTo(left, top, true);
+        lastData = { ...data };
+        if (!dispatch<KeyboardDragEvent<TDrag>>('key', { keyboardEvent: e, targetKey, data, dragElement }, { cancelable: true })) return;
+        updateTargetElementTo(left, top, true);
     }
 
     function onMouseWheel(e: WheelEvent): void {
@@ -67,7 +69,7 @@
         dragElement.style.left = `${left += e.movementX}px`;
         dragElement.style.top = `${top += e.movementY}px`;
 
-        if (dispatch('drag', { data: {} }, { cancelable: true }))
+        if (dispatch<DragEvent<TDrag>>('drag', { targetKey, data, dragElement }, { cancelable: true }))
             updateTargetElementTo(left, top);
     }
 
@@ -75,26 +77,24 @@
         if (!dragElement) return;
 
         if (lastTarget !== dropElement) {
-            lastTarget?.dispatchEvent(new CustomEvent<DragData<TDrag>>('drop', { detail: { targetKey, data, dragElement } }));
+            lastTarget?.dispatchEvent(new CustomEvent<DragEvent<TDrag>>('drop', { detail: { targetKey, data, dragElement } }));
             lastTarget = null;
         }
 
-        dispatch('dragEnd', { data: {} });
+        if (!dispatch<DragEvent<TDrag>>('dragEnd', { targetKey, data, dragElement }, { cancelable: true })) return;
 
-        document.body.removeChild<HTMLDivElement>(dragElement);
+        document.body.removeChild<HTMLElement>(dragElement);
         dragElement = null;
     }
 
     function onMouseDown(e: MouseEvent): void {
         if (!dragElement && usesLeftButton(e)) {
-            dispatch('dragStart', { data: {} });
-
             const { width, height }: CSSStyleDeclaration = window.getComputedStyle(containerElement.firstElementChild);
             const { left: dLeft, top: dTop }: DOMRect = containerElement.getBoundingClientRect();
             left = dLeft;
             top = dTop;
 
-            const newDragElement: HTMLDivElement = (containerElement.cloneNode(true) as HTMLDivElement).firstElementChild as HTMLDivElement;
+            const newDragElement: HTMLElement = (containerElement.cloneNode(true) as HTMLDivElement).firstElementChild as HTMLElement;
             newDragElement.style.position = 'fixed';
             newDragElement.style.width = width;
             newDragElement.style.height = height;
@@ -102,7 +102,9 @@
             newDragElement.style.top = `${top}px`;
             newDragElement.style.pointerEvents = 'none'; // To enable "scroll" actions.
 
-            dragElement = document.body.appendChild<HTMLDivElement>(newDragElement);
+            dragElement = document.body.appendChild<HTMLElement>(newDragElement);
+
+            dispatch<DragEvent<TDrag>>('dragStart', { targetKey, data, dragElement });
         }
     }
 </script>
