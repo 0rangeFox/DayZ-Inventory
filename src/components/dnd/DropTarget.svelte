@@ -30,22 +30,16 @@
     // useCallback equivalent of React
     $: (dragEnter = ({ detail }: CustomEvent<DragEvent<TDrag>>): void => {
         if (targetKey && !checkTargetKeys(targetKey, detail.targetKey)) return;
-
-        console.log(`DropTarget | DragEnter`, detail.data);
         dispatch<DragEvent<TDrag>>('dragEnter', detail);
     });
 
     $: (dragLeave = ({ detail }: CustomEvent<DragEvent<TDrag>>): void => {
         if (targetKey && !checkTargetKeys(targetKey, detail.targetKey)) return;
-
-        console.log(`DropTarget | DragLeave`, detail.data);
         dispatch<DragEvent<TDrag>>('dragLeave', detail);
     });
 
     $: (drop = ({ detail }: CustomEvent<DragEvent<TDrag>>): void => {
         if (targetKey && !checkTargetKeys(targetKey, detail.targetKey)) return;
-
-        console.log(`DropTarget | Drop`, detail.data);
         dispatch<DragEvent<TDrag>>('drop', detail);
     });
 </script>

@@ -32,7 +32,7 @@
     let left: number = 0;
     let top: number = 0;
 
-    let lastTarget: Element | null = null;
+    let lastTarget: HTMLSpanElement | null = null;
     let lastData: TDrag | null = null;
 
     onMount(() => {
@@ -44,9 +44,8 @@
 
         if (!forceUpdate && targetElement === lastTarget) return;
 
-        if (forceUpdate || lastTarget !== dropElement)
-            lastTarget?.dispatchEvent(new CustomEvent<DragEvent<TDrag>>('dragLeave', { detail: { targetKey, data: forceUpdate ? lastData : data, dragElement } }));
-        (lastTarget = forceUpdate || targetElement !== dropElement ? targetElement : null)?.dispatchEvent(new CustomEvent<DragEvent<TDrag>>('dragEnter', { detail: { targetKey, data, dragElement } }));
+        lastTarget?.dispatchEvent(new CustomEvent<DragEvent<TDrag>>('dragLeave', { detail: { targetKey, data: forceUpdate ? lastData : data, dragElement } }));
+        (lastTarget = targetElement)?.dispatchEvent(new CustomEvent<DragEvent<TDrag>>('dragEnter', { detail: { targetKey, data, dragElement } }));
     }
 
     function onKeyDown(e: KeyboardEvent) {
