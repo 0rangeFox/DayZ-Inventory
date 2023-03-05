@@ -2,7 +2,7 @@
     import { UNIQUE_KEY } from './DropTarget.svelte';
 
     function findDropElement(element: Element | null): HTMLSpanElement | null {
-        let dropElement: Element | null = element;
+        let dropElement: HTMLElement | Element | null = element;
 
         while (dropElement && dropElement.id !== UNIQUE_KEY)
             dropElement = dropElement.parentElement;
@@ -23,6 +23,7 @@
 
     export let data: TDrag | null = null;
     export let targetKey: any = null;
+    export let hideCursor: boolean = false;
 
     const dispatch = createEventDispatcher();
 
@@ -84,6 +85,9 @@
 
         document.body.removeChild<HTMLElement>(dragElement);
         dragElement = null;
+
+        if (hideCursor)
+            document.body.style.cursor = 'default';
     }
 
     function onMouseDown(e: MouseEvent): void {
@@ -102,6 +106,9 @@
             newDragElement.style.pointerEvents = 'none'; // To enable "scroll" actions.
 
             dragElement = document.body.appendChild<HTMLElement>(newDragElement);
+
+            if (hideCursor)
+                document.body.style.cursor = 'none';
 
             dispatch<DragEvent<TDrag>>('dragStart', { targetKey, data, dragElement });
         }
@@ -131,6 +138,6 @@
         height: inherit;
 
         user-select: none;
-        cursor: default;
+        cursor: inherit;
     }
 </style>
