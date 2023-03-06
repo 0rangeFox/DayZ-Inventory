@@ -1,9 +1,10 @@
 import { get } from 'svelte/store';
 import { speedWritable } from '../helpers';
 import { IS_WEB_DEBUG } from '../utils/TestUtil';
-import type { Inventory, Item } from '../models';
+import type { Inventory, InventoryItem, InventoryItemIndexes, Item } from '../models';
 import { ClothingType, GeneralType, InventoryType, WeaponType } from '../models';
 import moize from 'moize';
+import { getIndexesById } from '../utils/InventoryUtil';
 
 const [ items, updateItems ] = speedWritable<Item[]>(IS_WEB_DEBUG ? [
     { id: 1, name: 'Blue Press Vest', image: 'Blue_Press_Vest', width: 2, height: 2, weight: 0, limit: 1, type: ClothingType.KEVLAR, freeWidth: 4, freeHeight: 3, freeWeight: 0 },
@@ -15,7 +16,7 @@ const [ items, updateItems ] = speedWritable<Item[]>(IS_WEB_DEBUG ? [
     { id: 7, name: 'Ammo 7.62x39mm', image: 'Ammo_762x39', width: 1, height: 1, weight: 0, limit: 1, type: GeneralType.NONE, freeWidth: 0, freeHeight: 0, freeWeight: 0 }
 ] : []);
 
-const [ inventories ] = speedWritable<Inventory[]>(IS_WEB_DEBUG ? [
+const [ inventories, _, update ] = speedWritable<Inventory[]>(IS_WEB_DEBUG ? [
     { type: InventoryType.VICINITY, blocks: [] },
     { type: InventoryType.HAND, blocks: [] },
     {
@@ -49,10 +50,33 @@ const [ inventories ] = speedWritable<Inventory[]>(IS_WEB_DEBUG ? [
 
 const getItemById = moize((id: number): Item => get<Item[]>(items).find(({ id: itemId }) => id === itemId)!);
 
+function updateInventory(from: InventoryItem, to?: InventoryItemIndexes | null): void {
+    const fi: InventoryItemIndexes = getIndexesById(from.id)!;
+
+    return update((inventories) => {
+        if (to) {
+            if (inventories[to.inventory].blocks[to.block].items[to.slot]) { // Check if on this slot has actually an item and then swap
+                inventories[fi.inventory].blocks[fi.block].items[fi.slot] = {
+                    ...inventories[to.inventory].blocks[to.block].items[to.slot],
+                    slot: inventories[fi.inventory].blocks[fi.block].items[fi.slot].slot
+                };
+                inventories[to.inventory].blocks[to.block].items[to.slot] = from;
+            } else { // If there's no item on this slot, just move
+                inventories[fi.inventory].blocks[fi.block].items.splice(fi.slot, 1);
+                inventories[to.inventory].blocks[to.block].items.push(from);
+            }
+        } else
+            inventories[fi.inventory].blocks[fi.block].items[fi.slot] = from;
+
+       return inventories;
+    });
+}
+
 export {
     items,
     inventories,
 
     updateItems,
-    getItemById
+    getItemById,
+    updateInventory
 };

@@ -4,11 +4,14 @@
     import type { InventoryBlock, Item } from '../../lib/models';
     import { getItemById } from '../../lib/stores/InventoryStore';
 
+    export let inventoryId: number;
+    export let blockId: number;
+
     export let block: InventoryBlock;
     let item: Item = getItemById(block.item);
 </script>
 
 <div class='block'>
     <InventoryHeader {item} />
-    <InventoryGrid {item} {block} />
+    <InventoryGrid {inventoryId} {blockId} {item} {block} />
 </div>

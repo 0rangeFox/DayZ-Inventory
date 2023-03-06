@@ -17,10 +17,10 @@
     '
 />
 
-{#each $inventories as inventory}
+{#each $inventories as inventory, inventoryId}
     <section class='inventory'>
-        {#each inventory.blocks as block}
-            <InventoryBlock {block} />
+        {#each inventory.blocks as block, blockId}
+            <InventoryBlock {inventoryId} {blockId} {block} />
         {/each}
     </section>
 {/each}

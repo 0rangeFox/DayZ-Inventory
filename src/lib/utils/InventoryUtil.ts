@@ -49,7 +49,8 @@ function removeItemOnGrid(grid: (string | null)[], maxWidth: number, { id, item,
                 grid[slotY] = null;
 }
 
-function canPlaceItemOnGrid(grid: (string | null)[], maxWidth: number, { id, item, slot, rotated }: InventoryItem): boolean {
+function canPlaceItemOnGrid(grid: (string | null)[], maxWidth: number, iItem: InventoryItem, override: boolean = false): boolean {
+    const { id, item, slot, rotated } = iItem;
     const { width, height }: Item = getItemById(item);
 
     const maxHeight: number = grid.length / maxWidth;
@@ -71,6 +72,10 @@ function canPlaceItemOnGrid(grid: (string | null)[], maxWidth: number, { id, ite
         for (let slotY = slotX; slotY < maxItemHeight; slotY += maxWidth) // Loop through vertically
             if (grid[slotY] && grid[slotY] !== id)
                 return false; // Item cannot be placed because there is already another item in the grid cell
+
+    if (override)
+        insertItemOnGrid(grid, maxWidth, iItem);
+
     return true; // Item can be placed on the grid
 }
 
@@ -95,23 +100,40 @@ function canSwapItemOnGrid(grid: (string | null)[], maxWidth: number, from: Inve
     ) {
         return true;
     } else if (to && toItem) { // Means to swap between the items
+        const fromIndexes: InventoryItemIndexes = getIndexesById(from.id)!;
+        const toIndexes: InventoryItemIndexes = getIndexesById(to.id)!;
+
         // Create a copy of the grid to simulate item placement
         const gridCopy: (string | null)[] = [ ...grid ];
 
-        // Remove the current item from the grid
-        removeItemOnGrid(gridCopy, maxWidth, { ...to, slot: from.slot });
-        if (!canPlaceItemOnGrid(gridCopy, maxWidth, from)) return false;
+        // Check if we are swapping in same "block".
+        if (fromIndexes.block === toIndexes.block) {
+            // Remove both of items from the grid
+            removeItemOnGrid(gridCopy, maxWidth, { ...to, slot: from.slot });
+            removeItemOnGrid(gridCopy, maxWidth, { ...from, slot: to.slot });
 
-        const originalFrom: InventoryItem | null = getInventoryItemById(from.id);
-        if (!originalFrom) return false;
+            return canPlaceItemOnGrid(gridCopy, maxWidth, from, true) && canPlaceItemOnGrid(gridCopy, maxWidth, to);
+        } else {
+            // Remove the current item from the grid
+            removeItemOnGrid(gridCopy, maxWidth, { ...to, slot: from.slot });
+            if (!canPlaceItemOnGrid(gridCopy, maxWidth, from)) return false;
 
-        removeItemOnGrid(gridCopy, maxWidth, originalFrom);
-        return canPlaceItemOnGrid(gridCopy, maxWidth, to);
+            const originalFrom: InventoryItem | null = getInventoryItemById(from.id);
+            if (!originalFrom) return false;
+
+            const fromBlock: InventoryBlock = get<Inventory[]>(inventories)[fromIndexes.inventory].blocks[fromIndexes.block];
+            const { freeWidth }: Item = getItemById(fromBlock.item);
+            const fromGridCopy: (string | null)[] = generateGridFromBlock(fromBlock);
+
+            removeItemOnGrid(fromGridCopy, freeWidth, originalFrom);
+            return canPlaceItemOnGrid(fromGridCopy, freeWidth, to);
+        }
     } else // Means only put on grid
         return canPlaceItemOnGrid(grid, maxWidth, from);
 }
 
 export {
+    getIndexesById,
     generateGridFromBlock,
     canSwapItemOnGrid
 };

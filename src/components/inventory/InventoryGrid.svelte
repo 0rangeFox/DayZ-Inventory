@@ -5,12 +5,17 @@
     import { MAX_GRID_X } from '../../lib/models';
     import InventorySlot from './InventorySlot.svelte';
 
+    export let inventoryId: number;
+    export let blockId: number;
+
     export let item: Item;
     export let block: InventoryBlock;
-    const gridItems: (string | null)[] = generateGridFromBlock(block);
+    let gridItems: (string | null)[];
 
     let containerElement: HTMLDivElement;
     let containerWidth: number;
+
+    $: gridItems = generateGridFromBlock(block);
 
     // The ".1" is for the items when dragging begins so that they don't collide with whatever is on their left.
     $: slotSize = containerWidth && innerDimensions(containerElement).width / MAX_GRID_X - .1;
@@ -25,8 +30,8 @@
         class='grid'
         style='--size: {slotSize}px; --width: {item.freeWidth}; --height: {item.freeHeight};'
     >
-        {#each Array(gridItems.length) as _, slot}
-            <InventorySlot grid={gridItems} gridWidth={item.freeWidth} size={slotSize} {slot} item={block.items.find((item) => item.slot === slot)} />
+        {#each gridItems as _, slot}
+            <InventorySlot {inventoryId} {blockId} grid={gridItems} gridWidth={item.freeWidth} size={slotSize} {slot} item={block.items.find((item) => item.slot === slot)} />
         {/each}
     </div>
 </div>

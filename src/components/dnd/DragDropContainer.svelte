@@ -76,9 +76,9 @@
     function onMouseUp(e: MouseEvent): void {
         if (!dragElement) return;
 
-        if (lastTarget !== dropElement) {
+        if (lastData || lastTarget !== dropElement) {
             lastTarget?.dispatchEvent(new CustomEvent<DragEvent<TDrag>>('drop', { detail: { targetKey, data, dragElement } }));
-            lastTarget = null;
+            lastTarget = lastData = null;
         }
 
         if (!dispatch<DragEvent<TDrag>>('dragEnd', { targetKey, data, dragElement }, { cancelable: true })) return;
