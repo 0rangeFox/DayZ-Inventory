@@ -11,7 +11,9 @@
 
     let containerElement: HTMLDivElement;
     let containerWidth: number;
-    $: slotSize = containerWidth && innerDimensions(containerElement).width / MAX_GRID_X;
+
+    // The ".1" is for the items when dragging begins so that they don't collide with whatever is on their left.
+    $: slotSize = containerWidth && innerDimensions(containerElement).width / MAX_GRID_X - .1;
 </script>
 
 <div
@@ -23,8 +25,8 @@
         class='grid'
         style='--size: {slotSize}px; --width: {item.freeWidth}; --height: {item.freeHeight};'
     >
-        {#each Array(gridItems.length) as item, slot}
-            <InventorySlot size={slotSize} {slot} item={block.items.find((item) => item.slot === slot)} />
+        {#each Array(gridItems.length) as _, slot}
+            <InventorySlot grid={gridItems} gridWidth={item.freeWidth} size={slotSize} {slot} item={block.items.find((item) => item.slot === slot)} />
         {/each}
     </div>
 </div>

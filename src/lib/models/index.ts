@@ -2,13 +2,14 @@ import type Inventory from './Inventory';
 import { InventoryType } from './Inventory';
 import type InventoryBlock from './InventoryBlock';
 import { MAX_GRID_X, MAX_GRID_Y } from './InventoryBlock';
-import type { default as InventoryItem, Item } from './InventoryItem';
+import type { default as InventoryItem, InventoryItemIndexes, Item } from './InventoryItem';
 import { ClothingType, GeneralType, WeaponType } from './InventoryItem';
 
 export type {
     Inventory,
     InventoryBlock,
     InventoryItem,
+    InventoryItemIndexes,
     Item
 };
 

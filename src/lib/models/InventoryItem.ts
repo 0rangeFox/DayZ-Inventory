@@ -63,6 +63,12 @@ interface InventoryItem {
     rotated: boolean;
 }
 
+interface InventoryItemIndexes {
+    inventory: number;
+    block: number;
+    slot: number;
+}
+
 export default InventoryItem;
-export type { Item };
+export type { Item, InventoryItemIndexes };
 export { GeneralType, ClothingType, WeaponType };
