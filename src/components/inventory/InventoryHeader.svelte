@@ -1,7 +1,7 @@
 <script lang='ts'>
     import type { Item } from '../../lib/models';
 
-    export let item: Item;
+    export let item: Readonly<Item>;
 </script>
 
 <div class='header'>

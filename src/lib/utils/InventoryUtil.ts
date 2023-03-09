@@ -1,22 +1,65 @@
 import { get } from 'svelte/store';
 import { getItemById, inventories } from '../stores/InventoryStore';
-import type { Inventory, InventoryBlock, InventoryItem, InventoryItemIndexes, Item } from '../models';
+import type { Inventory, InventoryBlock, InventoryItem, BlockIndexes, InventoryIndex, InventoryItemIndexes, Item } from '../models';
 
-function getInventoryItemById(id: string): InventoryItem | null {
-    const iii: InventoryItemIndexes | null = getIndexesById(id);
-    return iii ? get<Inventory[]>(inventories)[iii.inventory].blocks[iii.block].items[iii.slot] : null;
+const enum IndexType {
+    INVENTORY,
+    BLOCK,
+    ITEM
 }
 
-function getIndexesById(id: string): InventoryItemIndexes | null {
-    const invs: Inventory[] = get<Inventory[]>(inventories);
-    for (let inventory = 0; inventory < invs.length; inventory++)
-        for (let block = 0; block < invs[inventory].blocks.length; block++)
-            for (let slot = 0; slot < invs[inventory].blocks[block].items.length; slot++)
-                if (invs[inventory].blocks[block].items[slot].id === id)
-                    return { inventory, block, slot };
+function getIndexesById(id: string, type: IndexType.INVENTORY): Readonly<InventoryIndex> | null;
+function getIndexesById(id: string, type: IndexType.BLOCK): Readonly<BlockIndexes> | null;
+function getIndexesById(id: string, type: IndexType.ITEM): Readonly<InventoryItemIndexes> | null;
+function getIndexesById(id: string): Readonly<InventoryItemIndexes> | null;
+
+/**
+ *
+ * @param id The ID generated and not the item identifier/reference.
+ * @param type As default is item, choose one to get just that indexes.
+ *
+ * @return Will be returned the indexes depending on the sizes.
+ */
+function getIndexesById(id: string, type: IndexType = IndexType.ITEM): Readonly<InventoryIndex | BlockIndexes | InventoryItemIndexes> | null {
+    const rInventories: Readonly<Inventory[]> = get<Readonly<Inventory[]>>(inventories);
+
+    switch (type) {
+        case IndexType.BLOCK:
+            for (let inventory = 0; inventory < rInventories.length; inventory++)
+                for (let block = 0; block < rInventories[inventory].blocks.length; block++)
+                    if (rInventories[inventory].blocks[block].id === id)
+                        return { inventory, block };
+            break;
+        case IndexType.ITEM:
+            for (let inventory = 0; inventory < rInventories.length; inventory++)
+                for (let block = 0; block < rInventories[inventory].blocks.length; block++)
+                    for (let slot = 0; slot < rInventories[inventory].blocks[block].items.length; slot++)
+                        if (rInventories[inventory].blocks[block].items[slot].id === id)
+                            return { inventory, block, slot };
+            break;
+    }
+
     return null;
 }
 
+/**
+ *
+ * @param id The ID generated and not the item identifier/reference.
+ *
+ * @return The Inventory Item model related to that ID has choosen.
+ */
+function getInventoryItemById(id: string): Readonly<InventoryItem> | null {
+    const iii: Readonly<InventoryItemIndexes> | null = getIndexesById(id);
+    return iii ? get<Readonly<Inventory[]>>(inventories)[iii.inventory].blocks[iii.block].items[iii.slot] : null;
+}
+
+/**
+ *
+ * @param width The maximum width
+ * @param height The maximum height
+ *
+ * @return Array with limited length corresponding to the limits defined
+ */
 function generateEmptyGrid(width: number, height: number): null[] {
     return new Array<null>(width * height).fill(null);
 }
@@ -79,61 +122,71 @@ function canPlaceItemOnGrid(grid: (string | null)[], maxWidth: number, iItem: In
     return true; // Item can be placed on the grid
 }
 
-function generateGridFromBlock(block: InventoryBlock): (string | null)[] {
-    const { freeWidth, freeHeight }: Item = getItemById(block.item);
+/**
+ * Generate the grid in array.
+ * @param item The ID of item to get the width and height.
+ * @param items To populate the grid with the items as default.
+ * @param ignore Insert the ID unique of items to not be placed on the grid generated.
+ *
+ * @return The grid built in array with items built in.
+ */
+function generateGrid(item: number, items: readonly InventoryItem[], ignore?: Set<string>): (string | null)[] {
+    const { freeWidth, freeHeight }: Item = getItemById(item);
     const blockGridItems: (string | null)[] = generateEmptyGrid(freeWidth, freeHeight);
+    const filteredItems = ignore ? items.filter(({ id }: InventoryItem) => !ignore.has(id)) : items;
 
-    for (const item of block.items)
+    for (let i = 0; i < filteredItems.length; i++) {
+        const item: Readonly<InventoryItem> = filteredItems[i];
         insertItemOnGrid(blockGridItems, freeWidth, item);
+    }
 
     return blockGridItems;
 }
 
-function canSwapItemOnGrid(grid: (string | null)[], maxWidth: number, from: InventoryItem, to?: InventoryItem | null): boolean {
-    const fromItem: Item = getItemById(from.item);
-    const toItem: Item | null = to ? getItemById(to.item) : null;
+/**
+ * Check if is possible to swap the item to indexes provided.
+ * @param from The item with state updated. (State updated for like, rotation)
+ * @param to The indexes to tell where to place the item.
+ *
+ * @return The possibility of putting or swapping.
+ */
+function canSwapItem(from: Readonly<InventoryItem>, to: Readonly<InventoryItemIndexes>): boolean {
+    const inventory: Readonly<Inventory[]> = get<Readonly<Inventory[]>>(inventories);
 
-    if ( // Check if both of items are in same rotation and sizes.
-        from.rotated === to?.rotated && fromItem.width === toItem?.width && fromItem.height === toItem?.height ||
-        // Check if both of items are in different rotation but same sizes.
-        from.rotated !== to?.rotated && fromItem.width === toItem?.height && fromItem.height === toItem?.width
-    ) {
-        return true;
-    } else if (to && toItem) { // Means to swap between the items
-        const fromIndexes: InventoryItemIndexes = getIndexesById(from.id)!;
-        const toIndexes: InventoryItemIndexes = getIndexesById(to.id)!;
+    const fromIndexes: Readonly<InventoryItemIndexes> = getIndexesById(from.id)!;
+    const fromOriginal: Readonly<InventoryItem> = inventory[fromIndexes.inventory].blocks[fromIndexes.block].items[fromIndexes.slot];
+
+    const { item, items }: Readonly<InventoryBlock> = inventory[to.inventory].blocks[to.block];
+    const { freeWidth }: Readonly<Item> = getItemById(item);
+
+    // Create a copy of the grid to simulate item placement
+    const toGridCopy: (string | null)[] = generateGrid(item, items, new Set([ fromOriginal.id ]));
+
+    // Check if exists any item on that slot, if there's no item, is just a "move"
+    if (!toGridCopy[to.slot])
+        return canPlaceItemOnGrid(toGridCopy, freeWidth, { ...from, slot: to.slot });
+
+    const toII: Readonly<InventoryItem> = getInventoryItemById(toGridCopy[to.slot]!)!;
+    // Remove the item on actual slot from the grid
+    removeItemOnGrid(toGridCopy, freeWidth, toII);
+
+    if (fromIndexes.block === to.block) { // Check if we are swapping in same "block".
+        return canPlaceItemOnGrid(toGridCopy, freeWidth, { ...from, slot: toII.slot }, true) && canPlaceItemOnGrid(toGridCopy, freeWidth, { ...toII, slot: from.slot });
+    } else { // If no these, means we are swapping items from different blocks.
+        if (!canPlaceItemOnGrid(toGridCopy, freeWidth, { ...from, slot: toII.slot })) return false;
+
+        const { item, items }: Readonly<InventoryBlock> = inventory[fromIndexes.inventory].blocks[fromIndexes.block];
+        const { freeWidth: fromFreeWidth }: Readonly<Item> = getItemById(item);
 
         // Create a copy of the grid to simulate item placement
-        const gridCopy: (string | null)[] = [ ...grid ];
-
-        // Check if we are swapping in same "block".
-        if (fromIndexes.block === toIndexes.block) {
-            // Remove both of items from the grid
-            removeItemOnGrid(gridCopy, maxWidth, { ...to, slot: from.slot });
-            removeItemOnGrid(gridCopy, maxWidth, { ...from, slot: to.slot });
-
-            return canPlaceItemOnGrid(gridCopy, maxWidth, from, true) && canPlaceItemOnGrid(gridCopy, maxWidth, to);
-        } else {
-            // Remove the current item from the grid
-            removeItemOnGrid(gridCopy, maxWidth, { ...to, slot: from.slot });
-            if (!canPlaceItemOnGrid(gridCopy, maxWidth, from)) return false;
-
-            const originalFrom: InventoryItem | null = getInventoryItemById(from.id);
-            if (!originalFrom) return false;
-
-            const fromBlock: InventoryBlock = get<Inventory[]>(inventories)[fromIndexes.inventory].blocks[fromIndexes.block];
-            const { freeWidth }: Item = getItemById(fromBlock.item);
-            const fromGridCopy: (string | null)[] = generateGridFromBlock(fromBlock);
-
-            removeItemOnGrid(fromGridCopy, freeWidth, originalFrom);
-            return canPlaceItemOnGrid(fromGridCopy, freeWidth, to);
-        }
-    } else // Means only put on grid
-        return canPlaceItemOnGrid(grid, maxWidth, from);
+        const fromGridCopy: (string | null)[] = generateGrid(item, items, new Set([ fromOriginal.id ]));
+        return canPlaceItemOnGrid(fromGridCopy, fromFreeWidth, { ...toII, slot: from.slot });
+    }
 }
 
 export {
+    IndexType,
     getIndexesById,
-    generateGridFromBlock,
-    canSwapItemOnGrid
+    generateGrid,
+    canSwapItem
 };

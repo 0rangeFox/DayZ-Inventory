@@ -48,25 +48,34 @@ const [ inventories, _, update ] = speedWritable<Inventory[]>(IS_WEB_DEBUG ? [
     }
 ] : []);
 
-const getItemById = moize((id: number): Item => get<Item[]>(items).find(({ id: itemId }) => id === itemId)!);
+/**
+ * @param id The ID of item (Not the ID generated)
+ *
+ * @return The item object corresponding to that ID.
+ */
+const getItemById = moize((id: number): Readonly<Item> => {
+    const rItems: Readonly<Item[]> = get<Readonly<Item[]>>(items);
+    return rItems.find(({ id: itemId }) => id === itemId)!;
+});
 
-function updateInventory(from: InventoryItem, to?: InventoryItemIndexes | null): void {
-    const fi: InventoryItemIndexes = getIndexesById(from.id)!;
+function updateInventory(from: InventoryItem, to: InventoryItemIndexes): void {
+    const fi: Readonly<InventoryItemIndexes> = getIndexesById(from.id)!;
+    const updatedFrom: InventoryItem = { ...from, slot: to.slot };
 
     return update((inventories) => {
-        if (to) {
-            if (inventories[to.inventory].blocks[to.block].items[to.slot]) { // Check if on this slot has actually an item and then swap
-                inventories[fi.inventory].blocks[fi.block].items[fi.slot] = {
-                    ...inventories[to.inventory].blocks[to.block].items[to.slot],
-                    slot: inventories[fi.inventory].blocks[fi.block].items[fi.slot].slot
-                };
-                inventories[to.inventory].blocks[to.block].items[to.slot] = from;
-            } else { // If there's no item on this slot, just move
-                inventories[fi.inventory].blocks[fi.block].items.splice(fi.slot, 1);
-                inventories[to.inventory].blocks[to.block].items.push(from);
-            }
-        } else
-            inventories[fi.inventory].blocks[fi.block].items[fi.slot] = from;
+        if (inventories[to.inventory].blocks[to.block].items.some((item) => item.slot === to.slot)) { // Check if on this slot has actually an item and then swap
+            const slotIndex: number = inventories[to.inventory].blocks[to.block].items.findIndex((item) => item.slot === to.slot);
+            inventories[fi.inventory].blocks[fi.block].items[fi.slot] = {
+                ...inventories[to.inventory].blocks[to.block].items[slotIndex],
+                slot: from.slot
+            };
+            inventories[to.inventory].blocks[to.block].items[slotIndex] = updatedFrom;
+        } else if (fi.inventory === to.inventory && fi.block === to.block) { // If is same inventory and block, means the item only was moved or rotated.
+                inventories[fi.inventory].blocks[fi.block].items[fi.slot] = updatedFrom;
+        } else { // If there's no item on this slot, just move the item to new block
+            inventories[fi.inventory].blocks[fi.block].items.splice(fi.slot, 1);
+            inventories[to.inventory].blocks[to.block].items.push(updatedFrom);
+        }
 
        return inventories;
     });
