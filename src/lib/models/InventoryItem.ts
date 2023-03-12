@@ -1,3 +1,5 @@
+import type { JTDSchemaType } from 'ajv/dist/jtd';
+
 const enum GeneralType {
     NONE
 }
@@ -56,25 +58,26 @@ interface InventoryItem {
     // Information
     item: number;
     amount: number;
-    data?: Map<string, any>;
+    data?: Record<string, string>;
 
     // Grid
     slot: number;
     rotated: boolean;
 }
 
-interface InventoryIndex {
-    inventory: number;
-}
-
-interface BlockIndexes extends InventoryIndex {
-    block: number;
-}
-
-interface InventoryItemIndexes extends BlockIndexes {
-    slot: number;
+const InventoryItemSchema: JTDSchemaType<InventoryItem> = {
+    properties: {
+        id: { type: 'string' },
+        item: { type: 'uint8' },
+        amount: { type: 'uint8' },
+        slot: { type: 'uint8' },
+        rotated: { type: 'boolean' }
+    },
+    optionalProperties: {
+        data: { values: { type: 'string' } }
+    }
 }
 
 export default InventoryItem;
-export type { Item, InventoryIndex, BlockIndexes, InventoryItemIndexes };
-export { GeneralType, ClothingType, WeaponType };
+export type { Item };
+export { GeneralType, ClothingType, WeaponType, InventoryItemSchema };

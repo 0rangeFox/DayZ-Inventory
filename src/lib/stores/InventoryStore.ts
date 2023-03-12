@@ -1,12 +1,12 @@
 import { get } from 'svelte/store';
-import { speedWritable } from '../helpers';
 import { IS_WEB_DEBUG } from '../utils/TestUtil';
+import { speedWritable } from '../helpers';
 import type { Inventory, InventoryItem, InventoryItemIndexes, Item } from '../models';
 import { ClothingType, GeneralType, InventoryType, WeaponType } from '../models';
 import moize from 'moize';
-import { getIndexesById } from '../utils/InventoryUtil';
+import { deepEqual } from 'fast-equals';
 
-const [ items, updateItems ] = speedWritable<Item[]>(IS_WEB_DEBUG ? [
+const [ items ] = speedWritable<Item[]>(IS_WEB_DEBUG ? [
     { id: 1, name: 'Blue Press Vest', image: 'Blue_Press_Vest', width: 2, height: 2, weight: 0, limit: 1, type: ClothingType.KEVLAR, freeWidth: 4, freeHeight: 3, freeWeight: 0 },
     { id: 2, name: 'Wool Coat Red Check', image: 'Wool_Coat_Red_Check', width: 4, height: 3, weight: 0, limit: 1, type: ClothingType.TOP_FIRST_LAYER, freeWidth: 7, freeHeight: 4, freeWeight: 0 },
     { id: 3, name: 'Black Jeans', image: 'Black_Jeans', width: 1, height: 2, weight: 0, limit: 1, type: ClothingType.BOTTOM, freeWidth: 4, freeHeight: 2, freeWeight: 0 },
@@ -58,22 +58,20 @@ const getItemById = moize((id: number): Readonly<Item> => {
     return rItems.find(({ id: itemId }) => id === itemId)!;
 });
 
-function updateInventory(from: InventoryItem, to: InventoryItemIndexes): void {
-    const fi: Readonly<InventoryItemIndexes> = getIndexesById(from.id)!;
-    const updatedFrom: InventoryItem = { ...from, slot: to.slot };
-
+function updateInventory(from: InventoryItemIndexes, to: InventoryItemIndexes, slot: number, rotated: boolean): void {
     return update((inventories) => {
-        if (inventories[to.inventory].blocks[to.block].items.some((item) => item.slot === to.slot)) { // Check if on this slot has actually an item and then swap
-            const slotIndex: number = inventories[to.inventory].blocks[to.block].items.findIndex((item) => item.slot === to.slot);
-            inventories[fi.inventory].blocks[fi.block].items[fi.slot] = {
-                ...inventories[to.inventory].blocks[to.block].items[slotIndex],
-                slot: from.slot
+        const updatedFrom: Readonly<InventoryItem> = { ...inventories[from.inventory].blocks[from.block].items[from.item], slot, rotated };
+
+        if (deepEqual(from, to)) { // If is same inventory and block, means the item only was moved or rotated.
+            inventories[from.inventory].blocks[from.block].items[from.item] = updatedFrom;
+        } else if (inventories[to.inventory].blocks[to.block].items[to.item]) { // Check if on this slot has actually an item and then swap
+            inventories[from.inventory].blocks[from.block].items[from.item] = {
+                ...inventories[to.inventory].blocks[to.block].items[to.item],
+                slot: inventories[from.inventory].blocks[from.block].items[from.item].slot
             };
-            inventories[to.inventory].blocks[to.block].items[slotIndex] = updatedFrom;
-        } else if (fi.inventory === to.inventory && fi.block === to.block) { // If is same inventory and block, means the item only was moved or rotated.
-                inventories[fi.inventory].blocks[fi.block].items[fi.slot] = updatedFrom;
+            inventories[to.inventory].blocks[to.block].items[to.item] = updatedFrom;
         } else { // If there's no item on this slot, just move the item to new block
-            inventories[fi.inventory].blocks[fi.block].items.splice(fi.slot, 1);
+            inventories[from.inventory].blocks[from.block].items.splice(from.item, 1);
             inventories[to.inventory].blocks[to.block].items.push(updatedFrom);
         }
 
@@ -85,7 +83,6 @@ export {
     items,
     inventories,
 
-    updateItems,
     getItemById,
     updateInventory
 };

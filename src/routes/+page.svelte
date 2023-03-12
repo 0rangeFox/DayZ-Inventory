@@ -2,7 +2,9 @@
     import '../styles.scss';
 
     import { inventories } from '../lib/stores/InventoryStore';
-    import InventoryBlock from '../components/inventory/InventoryBlock.svelte';
+    import Inventory from '../components/inventory/Inventory.svelte';
+    import { serialize } from '../lib/utils/JsonUtil';
+    import { InventoryPropsSchema } from '../lib/models';
 </script>
 
 <div
@@ -13,47 +15,10 @@
         min-height: 100vh;
         user-select: none;
         background-size: cover;
-        background-image: url("https://www.dayzrp.com/uploads/monthly_2018_11/DlQvdTqW4AInjYs.jpg.d5a9ca254a5a5610c486778973dd03f5.jpg");
+        background-image: url("https://media.discordapp.net/attachments/926185998466027570/1084086677817012314/image.png");
     '
 />
 
-{#each $inventories as inventory (inventory.type)}
-    <section class='inventory'>
-        {#each inventory.blocks as block (block.id)}
-            <InventoryBlock {block} />
-        {/each}
-    </section>
+{#each $inventories as { type, blocks }, inventory (type)}
+    <Inventory data={serialize(InventoryPropsSchema)({ index: { inventory }, blocks })} />
 {/each}
-
-<style lang='scss'>
-    .inventory {
-        width: 30%;
-        max-height: 90%;
-
-        overflow-y: scroll;
-
-        :global(.block + .block) {
-            margin-top: 5%;
-        }
-    }
-
-    /* Width */
-    ::-webkit-scrollbar {
-        width: 5px;
-    }
-
-    /* Track */
-    ::-webkit-scrollbar-track {
-        box-shadow: inset 0 0 5px grey;
-    }
-
-    /* Handle */
-    ::-webkit-scrollbar-thumb {
-        background: rgba(0, 0, 0, .3);
-    }
-
-    /* Handle on hover */
-    ::-webkit-scrollbar-thumb:hover {
-        background: rgba(0, 0, 0, .6);
-    }
-</style>

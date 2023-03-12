@@ -1,4 +1,6 @@
 import type { InventoryBlock } from '.';
+import type { JTDSchemaType } from 'ajv/dist/jtd';
+import { InventoryBlockSchema } from './InventoryBlock';
 
 enum InventoryType {
     VICINITY,
@@ -11,5 +13,12 @@ interface Inventory {
     blocks: InventoryBlock[];
 }
 
+const InventorySchema: JTDSchemaType<Inventory> = {
+    properties: {
+        type: { type: 'int8' },
+        blocks: { elements: InventoryBlockSchema }
+    }
+}
+
 export default Inventory;
-export { InventoryType };
+export { InventoryType, InventorySchema };

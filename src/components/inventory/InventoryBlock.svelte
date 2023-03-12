@@ -1,19 +1,31 @@
 <script lang='ts'>
+    import { beforeUpdate } from 'svelte';
+    import type { InventoryBlockIndexes, InventoryBlock, InventoryBlockProps, Item } from '../../lib/models';
+    import { deserialize, serialize } from '../../lib/utils/JsonUtil';
+    import { InventoryBlockPropsSchema, InventoryGridPropsSchema } from '../../lib/models';
+    import { getItemById } from '../../lib/stores/InventoryStore';
     import InventoryHeader from './InventoryHeader.svelte';
     import InventoryGrid from './InventoryGrid.svelte';
-    import { getItemById } from '../../lib/stores/InventoryStore';
-    import type { BlockIndexes, InventoryBlock, Item } from '../../lib/models';
-    import { generateGrid, getIndexesById, IndexType } from '../../lib/utils/InventoryUtil';
 
-    export let block: Readonly<InventoryBlock>;
-    const index: Readonly<BlockIndexes> = getIndexesById(block.id, IndexType.BLOCK)!;
-    const item: Readonly<Item> = getItemById(block.item);
-    let grid: (string | null)[];
+    export let data: string;
 
-    $: grid = generateGrid(item.id, block.items);
+    let index: Readonly<InventoryBlockIndexes>;
+    let block: Readonly<InventoryBlock>;
+    let item: Readonly<Item>;
+
+    beforeUpdate(() => {
+        const props: Readonly<InventoryBlockProps> = deserialize(InventoryBlockPropsSchema)(data);
+        index = props.index;
+        block = props.block;
+        item = getItemById(block.item);
+
+        console.log('Block ID:', block.id)
+    });
 </script>
+
+<svelte:options immutable />
 
 <div class='block'>
     <InventoryHeader {item} />
-    <InventoryGrid {index} width={item.freeWidth} height={item.freeHeight} {grid} items={block.items} />
+    <InventoryGrid data={serialize(InventoryGridPropsSchema)({ index, width: item.freeWidth, height: item.freeHeight, items: block.items})} />
 </div>
