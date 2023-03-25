@@ -8,6 +8,12 @@ enum InventoryType {
     PLAYER
 }
 
+interface InventorySizesContext {
+    inventory: number;
+    slot: number;
+    grid: number;
+}
+
 interface Inventory {
     type: InventoryType;
     blocks: InventoryBlock[];
@@ -21,4 +27,5 @@ const InventorySchema: JTDSchemaType<Inventory> = {
 }
 
 export default Inventory;
+export type { InventorySizesContext };
 export { InventoryType, InventorySchema };

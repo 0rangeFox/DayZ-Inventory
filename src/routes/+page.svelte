@@ -19,6 +19,26 @@
     '
 />
 
-{#each $inventories as { type, blocks }, inventory (type)}
-    <Inventory data={serialize(InventoryPropsSchema)({ index: { inventory }, blocks })} />
-{/each}
+<div class='inventories'>
+    {#each $inventories as { type, blocks }, inventory (type)}
+        <Inventory {type} data={serialize(InventoryPropsSchema)({ index: { inventory }, blocks })} />
+    {/each}
+</div>
+
+<style lang='scss'>
+    .inventories {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+
+        display: flex;
+        justify-content: space-between;
+
+        padding: 2%;
+        box-sizing: border-box;
+
+        :global(> :nth-child(even)) {
+            align-self: flex-end;
+        }
+    }
+</style>

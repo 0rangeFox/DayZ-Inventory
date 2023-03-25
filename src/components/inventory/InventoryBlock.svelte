@@ -2,10 +2,10 @@
     import { beforeUpdate } from 'svelte';
     import type { InventoryBlockIndexes, InventoryBlock, InventoryBlockProps, Item } from '../../lib/models';
     import { deserialize, serialize } from '../../lib/utils/JsonUtil';
-    import { InventoryBlockPropsSchema, InventoryGridPropsSchema } from '../../lib/models';
+    import { ClothingType, InventoryBlockPropsSchema, InventoryGridPropsSchema } from '../../lib/models';
     import { getItemById } from '../../lib/stores/InventoryStore';
-    import InventoryHeader from './InventoryHeader.svelte';
-    import InventoryGrid from './InventoryGrid.svelte';
+    import Header from './InventoryHeader.svelte';
+    import Grid from './InventoryGrid.svelte';
 
     export let data: string;
 
@@ -25,7 +25,9 @@
 
 <svelte:options immutable />
 
-<div class='block'>
-    <InventoryHeader {item} />
-    <InventoryGrid data={serialize(InventoryGridPropsSchema)({ index, width: item.freeWidth, height: item.freeHeight, items: block.items})} />
-</div>
+{#if item.type in ClothingType}
+    <div class='block'>
+        <Header {item} />
+        <Grid data={serialize(InventoryGridPropsSchema)({ index, width: item.freeWidth, height: item.freeHeight, items: block.items})} />
+    </div>
+{/if}

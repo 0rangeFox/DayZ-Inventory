@@ -21,7 +21,7 @@ const InventoryIndexSchema: JTDSchemaType<InventoryIndex> = {
 const InventoryBlockIndexSchema: JTDSchemaType<InventoryBlockIndexes> = {
     properties: {
         ...InventoryIndexSchema.properties,
-        block: { type: 'uint8' }
+        block: { type: 'int16' }
     }
 }
 

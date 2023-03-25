@@ -8,25 +8,23 @@
 </script>
 
 <script lang='ts'>
-    import { beforeUpdate } from 'svelte';
-    import type { InventoryBlockIndexes, InventoryGridProps } from '../../lib/models';
-    import { innerDimensions } from '../../lib/utils/GraphicUtil';
-    import { MAX_GRID_X, InventorySlotPropsSchema, InventoryGridPropsSchema } from '../../lib/models';
+    import { beforeUpdate, getContext, onMount } from 'svelte';
+    import type { Writable } from 'svelte/store';
+    import { sizeKey } from './Inventory.svelte';
+    import type { InventoryBlockIndexes, InventoryGridProps, InventorySizesContext } from '../../lib/models';
+    import { InventoryGridSlotPropsSchema, InventoryGridPropsSchema } from '../../lib/models';
     import { deserialize, serialize } from '../../lib/utils/JsonUtil';
-    import InventorySlot from './InventorySlot.svelte';
+    import Slot from './InventoryGridSlot.svelte';
 
     export let data: string;
 
-    let containerElement: HTMLDivElement;
-    let containerWidth: number;
+    const { subscribe }: Writable<InventorySizesContext> = getContext<Writable<InventorySizesContext>>(sizeKey);
 
     let index: Readonly<InventoryBlockIndexes>;
     let width: number;
     let height: number;
     let grid: GridSlotData[];
-
-    // The ".1" is for the items when dragging begins so that they don't collide with whatever is on their left.
-    $: size = containerWidth && innerDimensions(containerElement).width / MAX_GRID_X - .1;
+    let size: number = 0;
 
     beforeUpdate(() => {
         const { items, ...props }: Readonly<InventoryGridProps> = deserialize(InventoryGridPropsSchema)(data);
@@ -34,7 +32,7 @@
         width = props.width;
         height = props.height;
 
-        grid = new Array(width * height);
+        grid = new Array<GridSlotData>(width * height);
         for (let slot = 0; slot < grid.length; slot++) {
             const item: number = items.findIndex((item) => item.slot === slot);
             grid[slot] = { id: item !== -1 ? items[item].id : slot, index: { ...index, item } }
@@ -42,28 +40,24 @@
 
         console.log('Grid ID:', index);
     });
+
+    onMount(() => subscribe(({ grid }) => size = grid));
 </script>
 
 <svelte:options immutable />
 
-<div
-    bind:this={containerElement}
-    bind:clientWidth={containerWidth}
-    class='container'
->
+<div class='container'>
     <div
         class='grid'
         style='--size: {size}px; --width: {width}; --height: {height};'
     >
         {#each grid as { id, index }, slot (id)}
-            <InventorySlot {size} data={serialize(InventorySlotPropsSchema)({ index, slot })} />
+            <Slot {size} data={serialize(InventoryGridSlotPropsSchema)({ index, slot })} />
         {/each}
     </div>
 </div>
 
 <style lang='scss'>
-    @import '../../variables.module.scss';
-
     .container {
         background-color: rgba(23, 23, 23, .85);
         backdrop-filter: blur(2px);

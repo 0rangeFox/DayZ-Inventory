@@ -1,8 +1,8 @@
 import { get } from 'svelte/store';
 import { IS_WEB_DEBUG } from '../utils/TestUtil';
 import { speedWritable } from '../helpers';
-import type { Inventory, InventoryItem, InventoryItemIndexes, Item } from '../models';
-import { ClothingType, GeneralType, InventoryType, WeaponType } from '../models';
+import type {Inventory, InventoryBlock, InventoryBlockIndexes, InventoryItem, InventoryItemIndexes, Item} from '../models';
+import { ClothingType, GeneralType, InventoryType, isInventoryItemDragData, WeaponType } from '../models';
 import moize from 'moize';
 import { deepEqual } from 'fast-equals';
 
@@ -17,7 +17,16 @@ const [ items ] = speedWritable<Item[]>(IS_WEB_DEBUG ? [
 ] : []);
 
 const [ inventories, _, update ] = speedWritable<Inventory[]>(IS_WEB_DEBUG ? [
-    { type: InventoryType.VICINITY, blocks: [] },
+    {
+        type: InventoryType.VICINITY,
+        blocks: [
+            {
+                id: 'O12xT0G4Sbg0Zzxq',
+                item: 6,
+                items: []
+            },
+        ]
+    },
     { type: InventoryType.HAND, blocks: [] },
     {
         type: InventoryType.PLAYER,
@@ -54,25 +63,43 @@ const [ inventories, _, update ] = speedWritable<Inventory[]>(IS_WEB_DEBUG ? [
  * @return The item object corresponding to that ID.
  */
 const getItemById = moize((id: number): Readonly<Item> => {
-    const rItems: Readonly<Item[]> = get<Readonly<Item[]>>(items);
+    const rItems: ReadonlyArray<Item> = get<ReadonlyArray<Item>>(items);
     return rItems.find(({ id: itemId }) => id === itemId)!;
 });
 
-function updateInventory(from: InventoryItemIndexes, to: InventoryItemIndexes, slot: number, rotated: boolean): void {
+function updateInventory(from: InventoryBlockIndexes | InventoryItemIndexes, to: InventoryBlockIndexes | InventoryItemIndexes, slot: number, rotated: boolean): void {
     return update((inventories) => {
-        const updatedFrom: Readonly<InventoryItem> = { ...inventories[from.inventory].blocks[from.block].items[from.item], slot, rotated };
-
-        if (deepEqual(from, to)) { // If is same inventory and block, means the item only was moved or rotated.
-            inventories[from.inventory].blocks[from.block].items[from.item] = updatedFrom;
-        } else if (inventories[to.inventory].blocks[to.block].items[to.item]) { // Check if on this slot has actually an item and then swap
-            inventories[from.inventory].blocks[from.block].items[from.item] = {
-                ...inventories[to.inventory].blocks[to.block].items[to.item],
-                slot: inventories[from.inventory].blocks[from.block].items[from.item].slot
+        if (!isInventoryItemDragData(from) && isInventoryItemDragData(to)) { // Swapping from "slot" to "grid"
+            const updatedFrom: Readonly<InventoryItem> = {
+                ...inventories[from.inventory].blocks[from.block],
+                amount: 1,
+                slot,
+                rotated
             };
-            inventories[to.inventory].blocks[to.block].items[to.item] = updatedFrom;
-        } else { // If there's no item on this slot, just move the item to new block
-            inventories[from.inventory].blocks[from.block].items.splice(from.item, 1);
+
             inventories[to.inventory].blocks[to.block].items.push(updatedFrom);
+            inventories[from.inventory].blocks.splice(from.block, 1);
+        } else if (isInventoryItemDragData(from) && !isInventoryItemDragData(to)) { // Swapping from "grid" to "slot"
+            const { id, item }: Readonly<InventoryItem> = inventories[from.inventory].blocks[from.block].items[from.item];
+            const updatedFrom: Readonly<InventoryBlock> = { id, item, items: [] };
+
+            inventories[to.inventory].blocks.push(updatedFrom);
+            inventories[from.inventory].blocks[from.block].items.splice(from.item, 1);
+        } else if (isInventoryItemDragData(from) && isInventoryItemDragData(to)) { // Swapping from "grid" to "grid"
+            const updatedFrom: Readonly<InventoryItem> = { ...inventories[from.inventory].blocks[from.block].items[from.item], slot, rotated };
+
+            if (deepEqual(from, to)) { // If is same inventory and block and item, means the item only was rotated
+                inventories[from.inventory].blocks[from.block].items[from.item] = updatedFrom;
+            } else if (inventories[to.inventory].blocks[to.block].items[to.item]) { // Check if on this slot has actually an item and then swap
+                inventories[from.inventory].blocks[from.block].items[from.item] = {
+                    ...inventories[to.inventory].blocks[to.block].items[to.item],
+                    slot: inventories[from.inventory].blocks[from.block].items[from.item].slot
+                };
+                inventories[to.inventory].blocks[to.block].items[to.item] = updatedFrom;
+            } else { // If there's no item on this slot, just move the item to new block/grid
+                inventories[from.inventory].blocks[from.block].items.splice(from.item, 1);
+                inventories[to.inventory].blocks[to.block].items.push(updatedFrom);
+            }
         }
 
        return inventories;

@@ -1,18 +1,9 @@
-<script lang='ts' context='module'>
-    import type { InventoryItemIndexes } from '../../lib/models';
-
-    interface InventoryItemDragData {
-        index: InventoryItemIndexes;
-        rotated: boolean;
-    }
-</script>
-
 <script lang='ts'>
     import { beforeUpdate } from 'svelte';
-    import type { InventoryItem, InventorySlotProps, Item } from '../../lib/models';
+    import type { InventoryItem, InventoryGridSlotProps, Item, InventoryItemIndexes, InventoryDragData } from '../../lib/models';
     import { deserialize } from '../../lib/utils/JsonUtil';
-    import { InventorySlotPropsSchema } from '../../lib/models';
-    import { canSwapItem, getInventoryItemByIndexes } from '../../lib/utils/InventoryUtil';
+    import { InventoryGridSlotPropsSchema, isInventoryItemDragData } from '../../lib/models';
+    import { canSwapItem, canSwapSlot, getInventoryItemByIndexes } from '../../lib/utils/InventoryUtil';
     import { getItemById, updateInventory } from '../../lib/stores/InventoryStore';
     import type { DragEvent, KeyboardDragEvent } from '../../lib/dnd/models';
     import { deepEqual } from 'fast-equals';
@@ -28,13 +19,13 @@
     let referenceItem: Readonly<Item> | null;
 
     let isDragging: boolean = false;
-    let dragState: InventoryItemDragData;
+    let dragState: InventoryDragData;
     let isDroppable: boolean = false;
 
     beforeUpdate(() => {
         if (isDragging) return;
 
-        const props: Readonly<InventorySlotProps> = deserialize(InventorySlotPropsSchema)(data);
+        const props: Readonly<InventoryGridSlotProps> = deserialize(InventoryGridSlotPropsSchema)(data);
         slot = props.slot;
         index = props.index;
         item = getInventoryItemByIndexes(index);
@@ -44,11 +35,20 @@
         console.log('Item ID:', item?.id, index);
     });
 
-    function onDragEnter({ detail: { data, dragElement } }: CustomEvent<DragEvent<InventoryItemDragData>>): void {
-        if (deepEqual(index, data?.index) && data?.rotated === item?.rotated) {
+    function onDragEnter({ detail: { data, dragElement } }: CustomEvent<DragEvent<InventoryDragData>>): void {
+        if (!data) {
+            dragElement.style.boxShadow = 'inset 0 0 0 1px red';
+            isDroppable = false;
+        } else
+
+        // Check if is same item when dragging to original "released landing spot"
+        if (isInventoryItemDragData(data.index) && deepEqual(index, data.index) && data.rotated === item?.rotated) {
             dragElement.style.boxShadow = 'inset 0 0 0 1px transparent';
             isDroppable = false;
-        } else if (data && canSwapItem(data.index, index, slot, data.rotated)) {
+        } else if (
+            isInventoryItemDragData(data.index) && canSwapItem(data.index, index, slot, data.rotated) // If swapping between the items
+            || canSwapSlot(data.index, index, null, slot, data.rotated) // If swapping from slot to item or vice-versa
+        ) {
             dragElement.style.boxShadow = 'inset 0 0 0 1px green';
             isDroppable = true;
         } else {
@@ -57,11 +57,11 @@
         }
     }
 
-    function onDragLeave({ detail: { dragElement } }: CustomEvent<DragEvent<InventoryItemDragData>>): void {
+    function onDragLeave({ detail: { dragElement } }: CustomEvent<DragEvent<InventoryDragData>>): void {
         dragElement.style.boxShadow = 'inset 0 0 0 1px red';
     }
 
-    function onDrop({ detail: { data } }: CustomEvent<DragEvent<InventoryItemDragData>>): void {
+    function onDrop({ detail: { data } }: CustomEvent<DragEvent<InventoryDragData>>): void {
         if (!isDroppable || !data) return;
         isDroppable = false;
         updateInventory(data.index, index, slot, data.rotated);
@@ -72,7 +72,7 @@
     }
 
     function onRotateKey(e: CustomEvent<KeyboardDragEvent<KeyboardEvent>>): void {
-        const { dragElement, keyboardEvent } = e.detail;
+        const { dragElement, keyboardEvent }: Readonly<KeyboardDragEvent<KeyboardEvent>> = e.detail;
 
         if (referenceItem!.width === referenceItem!.height || keyboardEvent.code !== 'Space')
             return e.preventDefault();
@@ -93,6 +93,8 @@
         dragState.rotated = item!.rotated;
     }
 </script>
+
+<svelte:options immutable />
 
 <DropTarget
     on:dragEnter={onDragEnter}
@@ -116,8 +118,8 @@
                 >
                     <div
                         class='img'
-                        style:width={`${size * referenceItem.width}px`}
-                        style:height={`${size * referenceItem.height}px`}
+                        style:width='{size * referenceItem.width}px'
+                        style:height='{size * referenceItem.height}px'
                         style:background-image='url("/images/inventory/items/{referenceItem.image}.png")'
                         style:transform='rotate({item.rotated ? -90 : 0}deg)'
                     />

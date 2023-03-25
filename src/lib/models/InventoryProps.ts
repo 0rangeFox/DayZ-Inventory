@@ -6,7 +6,7 @@ import { InventoryItemSchema } from './InventoryItem';
 
 interface InventoryProps {
     index: Readonly<InventoryIndex>;
-    blocks: Readonly<InventoryBlock[]>;
+    blocks: ReadonlyArray<InventoryBlock>;
 }
 
 interface InventoryBlockProps {
@@ -18,10 +18,10 @@ interface InventoryGridProps {
     index: Readonly<InventoryBlockIndexes>;
     width: number;
     height: number;
-    items: Readonly<InventoryItem[]>;
+    items: ReadonlyArray<InventoryItem>;
 }
 
-interface InventorySlotProps {
+interface InventoryGridSlotProps {
     index: Readonly<InventoryItemIndexes>;
     slot: number;
 }
@@ -49,12 +49,12 @@ const InventoryGridPropsSchema: JTDSchemaType<InventoryGridProps> = {
     }
 }
 
-const InventorySlotPropsSchema: JTDSchemaType<InventorySlotProps> = {
+const InventoryGridSlotPropsSchema: JTDSchemaType<InventoryGridSlotProps> = {
     properties: {
         index: InventoryItemIndexSchema,
         slot: { type: 'uint8' }
     }
 }
 
-export type { InventoryProps, InventoryBlockProps, InventoryGridProps, InventorySlotProps };
-export { InventoryPropsSchema, InventoryBlockPropsSchema, InventoryGridPropsSchema, InventorySlotPropsSchema };
+export type { InventoryProps, InventoryBlockProps, InventoryGridProps, InventoryGridSlotProps };
+export { InventoryPropsSchema, InventoryBlockPropsSchema, InventoryGridPropsSchema, InventoryGridSlotPropsSchema };
