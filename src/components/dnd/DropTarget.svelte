@@ -49,6 +49,14 @@
     on:dragEnter={dragEnter}
     on:dragLeave={dragLeave}
     on:drop={drop}
+    class='container'
 >
     <slot />
 </span>
+
+<style lang='scss'>
+    .container {
+        width: 100%;
+        height: 100%;
+    }
+</style>
