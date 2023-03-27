@@ -122,20 +122,19 @@
     on:mouseup={onMouseUp}
 />
 
-<div
+<span
     bind:this={containerElement}
     on:mousedown={onMouseDown}
     class='container'
     style:display={dragElement ? 'none' : 'inherit'}
 >
     <slot />
-</div>
+</span>
 
 <style lang='scss'>
     .container {
-        position: relative;
-        width: inherit;
-        height: inherit;
+        width: 100%;
+        height: 100%;
 
         user-select: none;
         cursor: inherit;

@@ -1,24 +1,13 @@
 <script lang='ts' context='module'>
     import { v4 } from 'uuid';
-    export const UNIQUE_KEY: string = v4();
 
-    function checkTargetKeys(from: any | any[], to: any | any[]): boolean {
-        const isFromArray: boolean = Array.isArray(from), isToArray: boolean = Array.isArray(to);
-        if (isFromArray && isToArray) {
-            return (from as any[]).some((element) => (to as any[]).includes(element));
-        } else if (isFromArray) {
-            return (from as any[]).includes(to);
-        } else if (isToArray) {
-            return (to as any[]).includes(from);
-        } else {
-            return from === to;
-        }
-    }
+    export const UNIQUE_KEY: string = v4();
 </script>
 
 <script lang='ts'>
     import { createEventDispatcher } from 'svelte';
     import type { DragEvent } from '../../lib/dnd/models';
+    import { deepEqual } from 'fast-equals';
 
     type TDrag = $$Generic<any>;
 
@@ -29,17 +18,17 @@
 
     // useCallback equivalent of React
     $: (dragEnter = ({ detail }: CustomEvent<DragEvent<TDrag>>): void => {
-        if (targetKey && !checkTargetKeys(targetKey, detail.targetKey)) return;
+        if (targetKey && !deepEqual(targetKey, detail.targetKey)) return;
         dispatch<DragEvent<TDrag>>('dragEnter', detail);
     });
 
     $: (dragLeave = ({ detail }: CustomEvent<DragEvent<TDrag>>): void => {
-        if (targetKey && !checkTargetKeys(targetKey, detail.targetKey)) return;
+        if (targetKey && !deepEqual(targetKey, detail.targetKey)) return;
         dispatch<DragEvent<TDrag>>('dragLeave', detail);
     });
 
     $: (drop = ({ detail }: CustomEvent<DragEvent<TDrag>>): void => {
-        if (targetKey && !checkTargetKeys(targetKey, detail.targetKey)) return;
+        if (targetKey && !deepEqual(targetKey, detail.targetKey)) return;
         dispatch<DragEvent<TDrag>>('drop', detail);
     });
 </script>
