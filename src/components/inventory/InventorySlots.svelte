@@ -1,36 +1,22 @@
 <script lang='ts'>
     import { beforeUpdate, getContext, onMount } from 'svelte';
     import type { Writable } from 'svelte/store';
-    import type { InventoryBlock, InventoryIndex, InventorySizesContext, Item } from '../../lib/models';
+    import type { InventorySizesContext, InventorySlotsProps } from '../../lib/models';
     import { sizeKey } from './Inventory.svelte';
-    import { ClothingType, InventorySlotPropsSchema, InventoryType, MAX_SLOT_X, MAX_SLOT_Y, SLOTS, WeaponType } from '../../lib/models';
-    import { getItemById, inventories } from '../../lib/stores/InventoryStore';
+    import { deserialize, serialize } from '../../lib/utils/JsonUtil';
+    import { InventorySlotPropsSchema, InventorySlotsPropsSchema, MAX_SLOT_X, MAX_SLOT_Y } from '../../lib/models';
     import Slot from './InventorySlotsSlot.svelte';
-    import { serialize } from '../../lib/utils/JsonUtil';
 
-    export let type: InventoryType;
-    export let index: InventoryIndex;
+    export let height: number = MAX_SLOT_Y;
+    export let data: string;
 
     const { subscribe }: Writable<InventorySizesContext> = getContext<Writable<InventorySizesContext>>(sizeKey);
     let size: number = 0;
 
-    let playerBlocks: Map<WeaponType | ClothingType, number> = new Map<WeaponType | ClothingType, number>();
-    let vicinityBlocks: number[] = [];
+    let slots: ReadonlyArray<InventorySlotsProps> = [];
 
     beforeUpdate(() => {
-        const blocks: ReadonlyArray<InventoryBlock> = $inventories[index.inventory].blocks;
-
-        if (type === InventoryType.PLAYER) {
-            playerBlocks = new Map<WeaponType | ClothingType, number>();
-            for (let i = 0; i < blocks.length; i++) {
-                const { type }: Readonly<Item> = getItemById(blocks[i].item);
-                playerBlocks[type] = i;
-            }
-        } else {
-            vicinityBlocks = [];
-            for (let i = 0; i < blocks.length; i++)
-                vicinityBlocks.push(i);
-        }
+        slots = deserialize(InventorySlotsPropsSchema)(data);
     });
 
     onMount(() => subscribe(({ slot }) => size = slot));
@@ -41,17 +27,11 @@
 <div class='container'>
     <div
         class='grid'
-        style='--size: {size}px; --width: {MAX_SLOT_X}; --height: {type === InventoryType.PLAYER ? MAX_SLOT_Y : Math.ceil(vicinityBlocks.length / MAX_SLOT_X)};'
+        style='--size: {size}px; --width: {MAX_SLOT_X}; --height: {height};'
     >
-        {#if type === InventoryType.PLAYER}
-            {#each SLOTS as slot (slot.type)}
-                <Slot {size} data={serialize(InventorySlotPropsSchema)({ index: { ...index, block: playerBlocks[slot.type] ?? -1 }, slot })} />
-            {/each}
-        {:else}
-            {#each vicinityBlocks as block}
-                <Slot {size} data={serialize(InventorySlotPropsSchema)({ index: { ...index, block } })} />
-            {/each}
-        {/if}
+        {#each slots as { id, data } (id)}
+            <Slot {size} data={serialize(InventorySlotPropsSchema)(data)} />
+        {/each}
     </div>
 </div>
 

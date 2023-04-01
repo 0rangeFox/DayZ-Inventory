@@ -1,4 +1,4 @@
-import { MAX_GRID_X, MAX_GRID_Y } from '../../variables.module.scss';
+import { MAX_GRID_X, MAX_GRID_Y } from '../styles/variables.module.scss';
 import type { InventoryItem } from '.';
 import type { JTDSchemaType } from 'ajv/dist/jtd';
 import { InventoryItemSchema } from './InventoryItem';

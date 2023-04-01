@@ -1,8 +1,16 @@
 import { get } from 'svelte/store';
 import { IS_WEB_DEBUG } from '../utils/TestUtil';
 import { speedWritable } from '../helpers';
-import type {Inventory, InventoryBlock, InventoryBlockIndexes, InventoryItem, InventoryItemIndexes, Item} from '../models';
-import { ClothingType, GeneralType, InventoryType, isInventoryItemDragData, WeaponType } from '../models';
+import type {
+    Inventory,
+    InventoryBlock,
+    InventoryBlockIndexes,
+    InventoryIndex,
+    InventoryItem,
+    InventoryItemIndexes,
+    Item
+} from '../models';
+import { ClothingType, GeneralType, InventoryType, isInventoryIndex, isInventoryItemDragData, WeaponType } from '../models';
 import moize from 'moize';
 import { deepEqual } from 'fast-equals';
 
@@ -24,7 +32,7 @@ const [ inventories, _, update ] = speedWritable<Inventory[]>(IS_WEB_DEBUG ? [
                 id: 'O12xT0G4Sbg0Zzxq',
                 item: 6,
                 items: []
-            },
+            }
         ]
     },
     { type: InventoryType.HAND, blocks: [] },
@@ -67,9 +75,24 @@ const getItemById = moize((id: number): Readonly<Item> => {
     return rItems.find(({ id: itemId }) => id === itemId)!;
 });
 
-function updateInventory(from: InventoryBlockIndexes | InventoryItemIndexes, to: InventoryBlockIndexes | InventoryItemIndexes, slot: number, rotated: boolean): void {
+function updateInventory(from: InventoryBlockIndexes | InventoryItemIndexes, to: InventoryIndex | InventoryBlockIndexes | InventoryItemIndexes, slot: number, rotated: boolean): void {
     return update((inventories) => {
-        if (!isInventoryItemDragData(from) && isInventoryItemDragData(to)) { // Swapping from "slot" to "grid"
+        if (isInventoryIndex(to as InventoryIndex)) { // Drop action
+            let updatedFrom: Readonly<InventoryBlock>;
+            if (isInventoryItemDragData(from)) { // Dropping from "grid"
+                const { id, item }: Readonly<InventoryItem> = inventories[from.inventory].blocks[from.block].items[from.item];
+                updatedFrom = {id, item, items: []};
+                inventories[from.inventory].blocks[from.block].items.splice(from.item, 1);
+            } else if (!isInventoryItemDragData(from) && isInventoryIndex(to)) { // Dropping from "slot"
+                updatedFrom = inventories[from.inventory].blocks[from.block];
+                inventories[from.inventory].blocks.splice(from.block, 1);
+            } else return inventories;
+
+            inventories[to.inventory].blocks.push(updatedFrom);
+        } else if (!isInventoryItemDragData(from) && !isInventoryItemDragData(to)) { // Swapping from "slot" to "slot"
+            inventories[to.inventory].blocks.push(inventories[from.inventory].blocks[from.block]);
+            inventories[from.inventory].blocks.splice(from.block, 1);
+        } else if (!isInventoryItemDragData(from) && isInventoryItemDragData(to)) { // Swapping from "slot" to "grid"
             const updatedFrom: Readonly<InventoryItem> = {
                 ...inventories[from.inventory].blocks[from.block],
                 amount: 1,

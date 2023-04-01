@@ -94,8 +94,6 @@
     }
 </script>
 
-<svelte:options immutable />
-
 <DropTarget
     on:dragEnter={onDragEnter}
     on:dragLeave={onDragLeave}

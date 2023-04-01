@@ -1,32 +1,23 @@
 <script lang='ts'>
     import { beforeUpdate, getContext, onMount } from 'svelte';
     import type { Writable } from 'svelte/store';
-    import type {
-        InventoryBlockIndexes,
-        InventoryDragData,
-        InventorySizesContext,
-        InventorySlot,
-        InventorySlotProps,
-        Item
-    } from '../../lib/models';
-    import { sizeKey } from './Inventory.svelte';
-    import { deserialize } from '../../lib/utils/JsonUtil';
-    import { InventorySlotPropsSchema} from '../../lib/models';
-    import { getItemById, updateInventory } from '../../lib/stores/InventoryStore';
-    import { canSwapSlot, getInventoryBlockByIndexes } from '../../lib/utils/InventoryUtil';
-    import type { DragEvent, KeyboardDragEvent } from '../../lib/dnd/models';
-    import DropTarget from '../dnd/DropTarget.svelte';
-    import DragDropContainer from '../dnd/DragDropContainer.svelte';
+    import { InventoryGridPropsSchema } from '../../../lib/models';
+    import type { InventoryBlock, InventoryDragData, InventoryIndex, InventorySizesContext, Item } from '../../../lib/models';
+    import { sizeKey } from '../Inventory.svelte';
+    import { getItemById, inventories, updateInventory } from '../../../lib/stores/InventoryStore';
+    import type { DragEvent, KeyboardDragEvent } from '../../../lib/dnd/models';
+    import DropTarget from '../../dnd/DropTarget.svelte';
+    import DragDropContainer from '../../dnd/DragDropContainer.svelte';
+    import Grid from '../InventoryGrid.svelte';
+    import { serialize } from '../../../lib/utils/JsonUtil';
 
-    export let size: number;
-    export let data: string;
+    export let index: Readonly<InventoryIndex>;
 
     const { subscribe }: Writable<InventorySizesContext> = getContext<Writable<InventorySizesContext>>(sizeKey);
-    let slotSize: number = 0;
 
-    let index: Readonly<InventoryBlockIndexes>;
-    let slot: Readonly<InventorySlot> | null;
-    let item: Readonly<Item> | null;
+    let block: Readonly<InventoryBlock> | null = null;
+    let item: Readonly<Item> | null = null;
+    let slotSize: number = 0;
 
     let isDragging: boolean = false;
     let dragState: InventoryDragData;
@@ -35,25 +26,17 @@
     beforeUpdate(() => {
         if (isDragging) return;
 
-        const props: Readonly<InventorySlotProps> = deserialize(InventorySlotPropsSchema)(data);
-        index = props.index;
-        slot = props.slot;
-        item = index.block > -1 ? getItemById(getInventoryBlockByIndexes(index).item) : null;
-        dragState = { index, rotated: false };
+        block = $inventories[index.inventory].blocks[0] ?? null;
+        item = block ? getItemById(block.item) : null;
+        dragState = { index: { ...index, block: 0 }, rotated: false };
 
-        console.log('Slot Item ID:', item?.id, index);
+        console.log('Hand Item ID:', item?.id);
     });
 
     onMount(() => subscribe(({ grid }) => slotSize = grid));
 
-    function onDragEnter({ detail: { data, dragElement } }: CustomEvent<DragEvent<InventoryDragData>>): void {
-        if (slot && data && canSwapSlot(data.index, index, slot.type)) {
-            dragElement.style.boxShadow = 'inset 0 0 0 1px green';
-            isDroppable = true;
-        } else {
-            dragElement.style.boxShadow = 'inset 0 0 0 1px red';
-            isDroppable = false;
-        }
+    function onDragEnter({ detail: { dragElement } }: CustomEvent<DragEvent<InventoryDragData>>): void {
+        dragElement.style.boxShadow = `inset 0 0 0 1px ${block ? 'red' : 'green'}`;
     }
 
     function onDragLeave({ detail: { dragElement } }: CustomEvent<DragEvent<InventoryDragData>>): void {
@@ -61,8 +44,7 @@
     }
 
     function onDrop({ detail: { data } }: CustomEvent<DragEvent<InventoryDragData>>): void {
-        if (!isDroppable || !data) return;
-        isDroppable = false;
+        if (block || !data) return;
         updateInventory(data.index, index, -1, false);
     }
 
@@ -108,19 +90,13 @@
     }
 </script>
 
-<svelte:options immutable />
-
 <DropTarget
-    targetKey={slot?.type}
     on:dragEnter={onDragEnter}
     on:dragLeave={onDragLeave}
     on:drop={onDrop}
 >
-    <div
-        class='slot'
-        style:background-image={slot && !item ? `url("/images/inventory/slots/${slot.image}.png")` : 'none'}
-    >
-        {#if item}
+    <section class='hand'>
+        {#if block && item}
             <DragDropContainer
                 data={dragState}
                 targetKey={item.type}
@@ -132,43 +108,54 @@
                 <div class='item'>
                     <div
                         class='img'
-                        style:width='{size}px'
-                        style:height='{size}px'
                         style:background-image='url("/images/inventory/items/{item.image}.png")'
                     />
                 </div>
             </DragDropContainer>
+            {#if !isDragging && item.freeWidth > 0 && item.freeHeight > 0}
+                <Grid data={serialize(InventoryGridPropsSchema)({ index: { ...index, block: 0 }, width: item.freeWidth, height: item.freeHeight, items: block.items })} />
+            {/if}
         {/if}
-    </div>
+    </section>
 </DropTarget>
 
 <style lang='scss'>
-    .slot {
-        width: 100%;
-        height: 100%;
+    @import '../../../lib/styles/scrollbar';
 
-        background-position: center;
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-origin: content-box;
+    .hand {
+        min-height: 25vh;
+        max-height: 50vh;
 
-        box-sizing: border-box;
-        padding: 10%;
+        background-color: rgba(0, 0, 0, .65);
+        backdrop-filter: blur(2px);
+
+        overflow-y: auto;
+
+        :global(.container) {
+            background-color: unset;
+            backdrop-filter: unset;
+        }
     }
 
     .item {
-        width: inherit;
-        height: inherit;
+        width: 100%;
+        height: 25vh;
 
         display: flex;
         justify-content: center;
         align-items: center;
 
         .img {
+            width: 100%;
+            height: 100%;
+
             background-position: center;
             background-size: contain;
             background-repeat: no-repeat;
             background-origin: content-box;
+
+            padding: 5%;
+            box-sizing: border-box;
         }
     }
 </style>

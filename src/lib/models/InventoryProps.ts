@@ -1,13 +1,8 @@
-import type { InventoryIndex, InventoryBlockIndexes, InventoryBlock, InventoryItemIndexes, InventoryItem } from '.';
+import type { InventoryBlockIndexes, InventoryBlock, InventoryItemIndexes, InventoryItem } from '.';
 import type { JTDSchemaType } from 'ajv/dist/jtd';
 import { InventoryIndexSchema, InventoryBlockIndexSchema, InventoryItemIndexSchema } from './InventoryIndexes';
 import { InventoryBlockSchema } from './InventoryBlock';
 import { InventoryItemSchema } from './InventoryItem';
-
-interface InventoryProps {
-    index: Readonly<InventoryIndex>;
-    blocks: ReadonlyArray<InventoryBlock>;
-}
 
 interface InventoryBlockProps {
     index: Readonly<InventoryBlockIndexes>;
@@ -24,13 +19,6 @@ interface InventoryGridProps {
 interface InventoryGridSlotProps {
     index: Readonly<InventoryItemIndexes>;
     slot: number;
-}
-
-const InventoryPropsSchema: JTDSchemaType<InventoryProps> = {
-    properties: {
-        index: InventoryIndexSchema,
-        blocks: { elements: InventoryBlockSchema }
-    }
 }
 
 const InventoryBlockPropsSchema: JTDSchemaType<InventoryBlockProps> = {
@@ -56,5 +44,5 @@ const InventoryGridSlotPropsSchema: JTDSchemaType<InventoryGridSlotProps> = {
     }
 }
 
-export type { InventoryProps, InventoryBlockProps, InventoryGridProps, InventoryGridSlotProps };
-export { InventoryPropsSchema, InventoryBlockPropsSchema, InventoryGridPropsSchema, InventoryGridSlotPropsSchema };
+export type { InventoryBlockProps, InventoryGridProps, InventoryGridSlotProps };
+export { InventoryBlockPropsSchema, InventoryGridPropsSchema, InventoryGridSlotPropsSchema };

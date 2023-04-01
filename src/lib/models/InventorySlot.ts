@@ -1,4 +1,4 @@
-import { MAX_SLOT_X, MAX_SLOT_Y } from '../../variables.module.scss';
+import { MAX_SLOT_X, MAX_SLOT_Y } from '../styles/variables.module.scss';
 import type { InventoryBlockIndexes } from '.';
 import { ClothingType, WeaponType } from './InventoryItem';
 import { InventoryBlockIndexSchema } from './InventoryIndexes';
@@ -12,6 +12,11 @@ interface InventorySlot {
 interface InventorySlotProps {
     index: Readonly<InventoryBlockIndexes>;
     slot: Readonly<InventorySlot> | null;
+}
+
+interface InventorySlotsProps {
+    id: any;
+    data: Readonly<InventorySlotProps>;
 }
 
 const InventorySlotSchema: JTDSchemaType<InventorySlot> = {
@@ -28,6 +33,19 @@ const InventorySlotPropsSchema: JTDSchemaType<InventorySlotProps> = {
     }
 }
 
+const InventorySlotsSchema: JTDSchemaType<InventorySlotsProps> = {
+    properties: {
+        data: InventorySlotPropsSchema
+    },
+    optionalProperties: {
+        id: { nullable: false }
+    }
+}
+
+const InventorySlotsPropsSchema: JTDSchemaType<ReadonlyArray<InventorySlotsProps>> = {
+    elements: InventorySlotsSchema
+}
+
 const SLOTS: InventorySlot[] = [
     { image: 'hat', type: ClothingType.HAT },
     { image: 'top_first_layer', type: ClothingType.TOP_FIRST_LAYER },
@@ -40,5 +58,13 @@ const SLOTS: InventorySlot[] = [
 ];
 
 export default InventorySlot;
-export type { InventorySlotProps };
-export { MAX_SLOT_X, MAX_SLOT_Y, InventorySlotSchema, InventorySlotPropsSchema, SLOTS };
+export type { InventorySlotProps, InventorySlotsProps };
+export {
+    MAX_SLOT_X,
+    MAX_SLOT_Y,
+    InventorySlotSchema,
+    InventorySlotsSchema,
+    InventorySlotPropsSchema,
+    InventorySlotsPropsSchema,
+    SLOTS
+};

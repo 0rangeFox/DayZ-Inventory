@@ -1,13 +1,13 @@
 import type { InventoryIndex, InventoryBlockIndexes, InventoryItemIndexes } from './InventoryIndexes';
 import { InventoryIndexSchema, InventoryBlockIndexSchema, InventoryItemIndexSchema } from './InventoryIndexes';
 import type InventoryDragData from './InventoryDragData';
-import { isInventoryItemDragData } from './InventoryDragData';
-import type { InventoryProps, InventoryBlockProps, InventoryGridProps, InventoryGridSlotProps } from './InventoryProps';
-import { InventoryPropsSchema, InventoryBlockPropsSchema, InventoryGridPropsSchema, InventoryGridSlotPropsSchema } from './InventoryProps';
+import { isInventoryIndex, isInventoryItemDragData } from './InventoryDragData';
+import type { InventoryBlockProps, InventoryGridProps, InventoryGridSlotProps } from './InventoryProps';
+import { InventoryBlockPropsSchema, InventoryGridPropsSchema, InventoryGridSlotPropsSchema } from './InventoryProps';
 import type { default as Inventory, InventorySizesContext } from './Inventory';
 import { InventorySchema, InventoryType } from './Inventory';
-import type { default as InventorySlot, InventorySlotProps } from './InventorySlot';
-import { MAX_SLOT_X, MAX_SLOT_Y, InventorySlotSchema, InventorySlotPropsSchema, SLOTS } from './InventorySlot';
+import type { default as InventorySlot, InventorySlotProps, InventorySlotsProps } from './InventorySlot';
+import { MAX_SLOT_X, MAX_SLOT_Y, InventorySlotSchema, InventorySlotsSchema, InventorySlotPropsSchema, InventorySlotsPropsSchema, SLOTS } from './InventorySlot';
 import type InventoryBlock from './InventoryBlock';
 import { InventoryBlockSchema, MAX_GRID_X, MAX_GRID_Y } from './InventoryBlock';
 import type { default as InventoryItem, Item } from './InventoryItem';
@@ -27,14 +27,15 @@ export type {
     InventoryItem,
     Item,
 
-    InventoryProps,
     InventorySlotProps,
+    InventorySlotsProps,
     InventoryBlockProps,
     InventoryGridProps,
     InventoryGridSlotProps
 };
 
 export {
+    isInventoryIndex,
     isInventoryItemDragData,
 
     InventoryIndexSchema,
@@ -42,10 +43,11 @@ export {
     InventoryItemIndexSchema,
     InventorySchema,
     InventorySlotSchema,
+    InventorySlotsSchema,
     InventoryBlockSchema,
     InventoryItemSchema,
-    InventoryPropsSchema,
     InventorySlotPropsSchema,
+    InventorySlotsPropsSchema,
     InventoryBlockPropsSchema,
     InventoryGridPropsSchema,
     InventoryGridSlotPropsSchema,

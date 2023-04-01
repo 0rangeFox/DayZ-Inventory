@@ -150,9 +150,11 @@ function canPlaceItemOnGrid(grid: (number | null)[], maxWidth: number, { width, 
 }
 
 /**
- * Check if is possible to swap the "item to slot"/"slot to item" from the indexes provided. Both arguments should be
- * different types (Like, from InventoryBlockIndexes to InventoryItemIndexes, or, from InventoryItemIndexes to InventoryBlockIndexes)
+ * Check if is possible to swap the "slot to slot"/"item to slot"/"slot to item" from the indexes provided. Both
+ * arguments should be different types (Like, from InventoryBlockIndexes to InventoryBlockIndexes, or,
+ * from InventoryBlockIndexes to InventoryItemIndexes, or, from InventoryItemIndexes to InventoryBlockIndexes)
  * otherwise, will always return false.
+ * - From InventoryBlockIndexes | To InventoryBlockIndexes = Swapping from "slot" to "slot"
  * - From InventoryBlockIndexes | To InventoryItemIndexes = Swapping from "slot" to "grid"
  * - From InventoryItemIndexes | To InventoryBlockIndexes = Swapping from "grid" to "slot"
  * @param from The item to be moved or swapped with to.
@@ -165,8 +167,12 @@ function canPlaceItemOnGrid(grid: (number | null)[], maxWidth: number, { width, 
  * @return The possibility of putting or swapping.
  */
 function canSwapSlot(from: Readonly<InventoryBlockIndexes | InventoryItemIndexes>, to: Readonly<InventoryBlockIndexes | InventoryItemIndexes>, type: ClothingType | WeaponType | null = null, slot: number = 0, rotated: boolean = false): boolean {
-    // Check if it is swapping from "slot" to "grid"
-    if (!isInventoryItemDragData(from) && isInventoryItemDragData(to)) {
+    if (!isInventoryItemDragData(from) && !isInventoryItemDragData(to)) { // Check if it is swapping between the "slots"
+        const fromIB: Readonly<InventoryBlock> = getInventoryBlockByIndexes(from);
+        const fromI: Readonly<Item> = getItemById(fromIB.item);
+
+        return to.block < 0 && fromI.type === type;
+    } else if (!isInventoryItemDragData(from) && isInventoryItemDragData(to)) { // Check if it is swapping from "slot" to "grid"
         const fromIB: Readonly<InventoryBlock> = getInventoryBlockByIndexes(from);
 
         if (fromIB.items.length > 0 || from.inventory === to.inventory && from.block === to.block) return false;

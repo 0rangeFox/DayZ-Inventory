@@ -1,10 +1,7 @@
 <script lang='ts'>
-    import '../styles.scss';
+    import '$lib/styles/styles.scss';
 
-    import { inventories } from '../lib/stores/InventoryStore';
     import Inventory from '../components/inventory/Inventory.svelte';
-    import { serialize } from '../lib/utils/JsonUtil';
-    import { InventoryPropsSchema } from '../lib/models';
 </script>
 
 <div
@@ -19,26 +16,15 @@
     '
 />
 
-<div class='inventories'>
-    {#each $inventories as { type, blocks }, inventory (type)}
-        <Inventory {type} data={serialize(InventoryPropsSchema)({ index: { inventory }, blocks })} />
-    {/each}
-</div>
+<span class='inventory'>
+    <Inventory />
+</span>
 
 <style lang='scss'>
-    .inventories {
-        position: absolute;
+    .inventory {
         width: 100vw;
         height: 100vh;
 
-        display: flex;
-        justify-content: space-between;
-
-        padding: 2%;
-        box-sizing: border-box;
-
-        :global(> :nth-child(even)) {
-            align-self: flex-end;
-        }
+        position: absolute;
     }
 </style>
