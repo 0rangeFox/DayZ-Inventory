@@ -15,7 +15,7 @@ interface InventorySlotProps {
 }
 
 interface InventorySlotsProps {
-    id: any;
+    id?: string;
     data: Readonly<InventorySlotProps>;
 }
 
@@ -38,7 +38,7 @@ const InventorySlotsSchema: JTDSchemaType<InventorySlotsProps> = {
         data: InventorySlotPropsSchema
     },
     optionalProperties: {
-        id: { nullable: false }
+        id: { type: 'string' }
     }
 }
 
