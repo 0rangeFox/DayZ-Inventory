@@ -12,7 +12,7 @@
         min-height: 100vh;
         user-select: none;
         background-size: cover;
-        background-image: url("https://media.discordapp.net/attachments/926185998466027570/1084086677817012314/image.png");
+        background-image: url("/images/background.png");
     '
 />
 
