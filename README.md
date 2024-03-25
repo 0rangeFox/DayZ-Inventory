@@ -20,7 +20,7 @@ The keys are very simple, here is a list of the keys that is being listened:
 ![1](https://github.com/0rangeFox/DayZ-Inventory/assets/38193239/0863d5f7-4c40-46e8-bc9f-b3296f5d3714)
 ![2](https://github.com/0rangeFox/DayZ-Inventory/assets/38193239/4bfa86f0-1d11-469b-b8b7-2bed71fbe813)
 
-https://github.com/0rangeFox/DayZ-Inventory/assets/38193239/0097673f-4baf-4644-9207-2a47cb72a9b4
+https://github.com/0rangeFox/DayZ-Inventory/assets/38193239/0fc0420d-8fa2-4150-8869-fd4c20f5fa7e
 
 ### ⚙️ Development
 In terms of development, this is highly recommended for developers and not _Configurators_, because the project is not prepared nor is it modular to adapt any game/website, it requires changes to adapt them. Regarding the structure of the project, I think it's well-organized and there's not much to explain, check it out for yourselves and if you find any errors report them in the Issues or any improvements you think could be made make a PR.
